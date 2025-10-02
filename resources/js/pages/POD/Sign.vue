@@ -62,3 +62,66 @@ onMounted(() => {
   getGeo()
 })
 </script>
+
+<template>
+  <!-- Page title in the browser tab -->
+  <Head :title="`Sign POD • Load ${props.load.ref}`" />
+
+  <div class="p-6 space-y-6">
+    <h1 class="text-2xl font-semibold">Sign POD — Load {{ props.load.ref }}</h1>
+
+    <!-- Signature pad -->
+    <div class="bg-white rounded shadow p-4 space-y-3">
+      <div>
+        <label class="block text-sm mb-1">Signature</label>
+        <div class="border rounded">
+          <!-- This must match the `canvasRef` from your script -->
+          <canvas ref="canvasRef" width="600" height="220" class="w-full"></canvas>
+        </div>
+        <button type="button" @click="clearSig" class="mt-2 text-sm text-gray-600 hover:text-gray-800">
+          Clear
+        </button>
+      </div>
+
+      <!-- Basic signer info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm mb-1">Signer name</label>
+          <input v-model="form.signer_name" class="w-full border rounded p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Signer role</label>
+          <select v-model="form.signer_role" class="w-full border rounded p-2">
+            <option value="receiver">Receiver</option>
+            <option value="shipper_rep">Shipper Rep</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Optional contact info -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm mb-1">Email (optional)</label>
+          <input v-model="form.receiver_email" type="email" class="w-full border rounded p-2" />
+        </div>
+        <div>
+          <label class="block text-sm mb-1">Phone (E.164)</label>
+          <input v-model="form.receiver_phone_e164" placeholder="+1..." class="w-full border rounded p-2" />
+        </div>
+      </div>
+
+      <!-- Location feedback -->
+      <div class="text-sm text-gray-500">
+        Location accuracy: <b>{{ form.accuracy_m ?? '—' }}m</b>
+      </div>
+
+      <!-- Submit -->
+      <div class="flex justify-end">
+        <button type="button" @click="submit" class="px-4 py-2 bg-emerald-600 text-white rounded">
+          Submit POD
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
