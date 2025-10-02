@@ -2,27 +2,21 @@ name: tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, feature/** ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main ]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
-
-    env:
-      APP_ENV: testing
-      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA= # replaced at key:generate
-      CACHE_DRIVER: array
-      QUEUE_CONNECTION: sync
-      SESSION_DRIVER: array
-      LOG_CHANNEL: stack
-      DB_CONNECTION: sqlite
-      DB_DATABASE: /home/runner/work/${{ github.event.repository.name }}/${{ github.event.repository.name }}/database/database.sqlite
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php -r "file_exists('database/database.sqlite') || mkdir('database');"
+          php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -31,41 +25,27 @@ jobs:
           tools: composer:v2
           coverage: none
 
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.composer/cache/files
-            vendor
-          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            composer-${{ runner.os }}-
-
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
-      - name: Prepare environment
-        run: |
-          cp .env.example .env || true
-          php artisan key:generate --force
-          mkdir -p database
-          touch "$DB_DATABASE"
-
       - name: Run migrations (sqlite)
-        run: php artisan migrate --no-interaction -v
+        run: php artisan migrate --force
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
 
       - name: Install Node deps
         run: |
-          npm ci || npm i --no-audit --no-fund
-          
+          if [ -f package-lock.json ]; then
+            npm ci --no-audit --no-fund
+          else
+            npm i --no-audit --no-fund
+          fi
+
       - name: Build (optional)
         run: npm run build --if-present
 
       - name: PHP Unit tests
-        run: vendor/bin/phpunit --testdox || php artisan test --parallel --recreate-database
+        run: php artisan test -q
