@@ -37,12 +37,7 @@ jobs:
           node-version: '22'
 
       - name: Install Node deps
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci --no-audit --no-fund
-          else
-            npm i --no-audit --no-fund
-          fi
+         run: npm ci --no-audit --no-fund || npm i --no-audit --no-fund
 
       - name: Build (optional)
         run: npm run build --if-present
