@@ -1,15 +1,7 @@
-@props(['url' => config('app.url')])
-
-<table class="header" width="100%" cellpadding="0" cellspacing="0" role="presentation">
-  <tr>
-    <td class="content-cell" align="center" style="padding: 28px 0;">
-      <a href="{{ $url }}" style="display:inline-block;text-decoration:none;">
-        <img src="{{ asset('images/paytread-logo.png') }}"
-             alt="PayTread"
-             class="logo"
-             width="160"
-             style="height:auto;border:none;display:block;">
-      </a>
+<tr>
+    <td class="header" style="padding:25px 0;text-align:center;background:#0ea5e9;">
+        <a href="{{ config('app.url') }}" style="font-size:18px;color:#fff;text-decoration:none;font-weight:700;">
+            {{ config('app.name', 'PayTread') }}
+        </a>
     </td>
-  </tr>
-</table>
+</tr>
