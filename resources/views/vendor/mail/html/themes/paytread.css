@@ -17,3 +17,9 @@ a { color: #0ea5e9 !important; }
 /* Optional tweaks */
 .header .content-cell { padding: 28px 0 !important; }
 .logo { height: auto !important; }
+
+/* Brand-ish look */
+.wrapper { background-color: #f8fafc; }
+.header a { color: #ffffff !important; }
+.button { background-color: #0ea5e9 !important; border-color: #0ea5e9 !important; }
+a { color: #0ea5e9 !important; }
