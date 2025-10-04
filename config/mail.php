@@ -114,3 +114,9 @@ return [
     ],
 
 ];
+'markdown' => [
+    'theme' => 'paytread',
+    'paths' => [
+        resource_path('views/vendor/mail'),
+    ],
+],
