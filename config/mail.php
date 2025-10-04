@@ -29,12 +29,10 @@ return [
         'name' => env('MAIL_FROM_NAME', 'PayTread'),
     ],
 
-    // Your custom Markdown theme + path
-    'markdown' => [
-        'theme' => 'paytread',
-        'paths' => [
-            resource_path('views/vendor/mail'),
-        ],
+  'markdown' => [
+    'theme' => 'paytread',
+    'paths' => [
+        resource_path('views/vendor/mail'),
     ],
+],
 
-];
