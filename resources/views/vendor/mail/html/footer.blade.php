@@ -1,11 +1,7 @@
-<table class="footer" width="100%" cellpadding="0" cellspacing="0" role="presentation">
-  <tr>
-    <td class="content-cell" align="center">
-      <p style="margin:6px 0 0;color:#6b7280;">© {{ date('Y') }} PayTread. All rights reserved.</p>
-      <p style="margin:0;color:#9ca3af;">
-        <a href="{{ config('app.url') }}/terms" style="color:#9ca3af;text-decoration:underline;">Terms</a> •
-        <a href="{{ config('app.url') }}/privacy" style="color:#9ca3af;text-decoration:underline;">Privacy</a>
-      </p>
+<tr>
+    <td class="content-cell" align="center" style="color:#64748b;font-size:12px">
+        © {{ date('Y') }} {{ config('app.name', 'PayTread') }}. All rights reserved.
+        {{-- Optional: --}}
+        {{-- <br><a href="{{ config('app.url') }}/unsubscribe" style="color:#94a3b8;">Unsubscribe</a> --}}
     </td>
-  </tr>
-</table>
+</tr>
