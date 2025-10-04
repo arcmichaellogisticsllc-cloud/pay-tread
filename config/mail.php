@@ -112,11 +112,26 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
+<?php
+
+return [
+
+    'default' => env('MAIL_MAILER', 'smtp'),
+
+    'mailers' => [
+        // ... your existing mailers here ...
+    ],
+
+    'from' => [
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', 'PayTread'),
+    ],
+    
+    'markdown' => [
+        'theme' => 'paytread',
+        'paths' => [
+            resource_path('views/vendor/mail'),
+        ],
+    ],
 
 ];
-'markdown' => [
-    'theme' => 'paytread',
-    'paths' => [
-        resource_path('views/vendor/mail'),
-    ],
-],
