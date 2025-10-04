@@ -1,25 +1,59 @@
-/* PayTread email theme */
-body, .wrapper { background-color: #f6f7fb !important; }
-
-/* Links */
-a { color: #0ea5e9 !important; }
-
-/* Primary button */
-.button, .button-primary {
-  background-color: #0ea5e9 !important;
-  border-top: 10px solid #0ea5e9 !important;
-  border-right: 18px solid #0ea5e9 !important;
-  border-bottom: 10px solid #0ea5e9 !important;
-  border-left: 18px solid #0ea5e9 !important;
-  color: #ffffff !important;
+/* Canvas & typography */
+body, .wrapper {
+  background-color: #F3F5F9 !important; /* light gray page background */
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter,
+               Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif !important;
 }
 
-/* Optional tweaks */
-.header .content-cell { padding: 28px 0 !important; }
-.logo { height: auto !important; }
+/* Outer wrapper the framework uses */
+table.wrapper { background-color: #F3F5F9 !important; }
 
-/* Brand-ish look */
-.wrapper { background-color: #f8fafc; }
-.header a { color: #ffffff !important; }
-.button { background-color: #0ea5e9 !important; border-color: #0ea5e9 !important; }
-a { color: #0ea5e9 !important; }
+/* “Card” */
+.inner-body {
+  background-color: #FFFFFF !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06) !important;
+}
+
+/* Container sizing */
+.content-cell { padding: 32px !important; }
+@media (min-width: 640px) {
+  .inner-body { width: 640px !important; }
+}
+
+/* Headings & text */
+h1, h2, h3 { color: #111827 !important; margin-top: 0; }
+p, ul, ol, blockquote { color: #374151 !important; line-height: 1.6; }
+
+/* The top brand area */
+.header { padding: 40px 0 !important; text-align: center !important; }
+.header a { color: #111827 !important; font-weight: 700 !important; text-decoration: none !important; }
+
+/* The main call-to-action */
+.action .button {
+  background-color: #111827 !important; /* dark button */
+  border-top: 14px solid #111827 !important;
+  border-right: 22px solid #111827 !important;
+  border-bottom: 14px solid #111827 !important;
+  border-left: 22px solid #111827 !important;
+  border-radius: 10px !important;      /* rounded button */
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+
+/* Divider line (between body and fallback link) */
+hr, .rule {
+  height: 1px !important;
+  border: none !important;
+  background: #E5E7EB !important;
+  margin: 24px 0 !important;
+}
+
+/* Fallback URL block (small, readable) */
+.subcopy p { color: #6B7280 !important; font-size: 12px !important; }
+.subcopy a  { color: #374151 !important; text-decoration: underline !important; }
+
+/* Footer */
+.footer p { color: #6B7280 !important; font-size: 12px !important; }
