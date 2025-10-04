@@ -29,7 +29,7 @@ return [
         'name' => env('MAIL_FROM_NAME', 'PayTread'),
     ],
 
-    // 👇 Your custom Markdown theme + path
+    // Your custom Markdown theme + path
     'markdown' => [
         'theme' => 'paytread',
         'paths' => [
