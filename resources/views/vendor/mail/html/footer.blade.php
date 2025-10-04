@@ -1,7 +1,8 @@
 <tr>
-    <td class="content-cell" align="center" style="color:#64748b;font-size:12px">
-        © {{ date('Y') }} {{ config('app.name', 'PayTread') }}. All rights reserved.
-        {{-- Optional: --}}
-        {{-- <br><a href="{{ config('app.url') }}/unsubscribe" style="color:#94a3b8;">Unsubscribe</a> --}}
+    <td class="footer" style="text-align:center; padding:28px 0;">
+        <p style="margin:0; font-size:12px; color:#6B7280;">
+            &copy; {{ date('Y') }} PayTread. All rights reserved.
+        </p>
     </td>
 </tr>
+
