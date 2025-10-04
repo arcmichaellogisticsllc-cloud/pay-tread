@@ -1,7 +1,8 @@
 <tr>
-    <td class="header" style="padding:25px 0;text-align:center;background:#0ea5e9;">
-        <a href="{{ config('app.url') }}" style="font-size:18px;color:#fff;text-decoration:none;font-weight:700;">
-            {{ config('app.name', 'PayTread') }}
+    <td class="header" style="padding:40px 0; text-align:center;">
+        <a href="{{ config('app.url') }}"
+           style="display:inline-block; font-size:22px; font-weight:700; color:#111827; text-decoration:none;">
+            PayTread
         </a>
     </td>
 </tr>
