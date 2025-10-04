@@ -1,0 +1,19 @@
+/* PayTread email theme */
+body, .wrapper { background-color: #f6f7fb !important; }
+
+/* Links */
+a { color: #0ea5e9 !important; }
+
+/* Primary button */
+.button, .button-primary {
+  background-color: #0ea5e9 !important;
+  border-top: 10px solid #0ea5e9 !important;
+  border-right: 18px solid #0ea5e9 !important;
+  border-bottom: 10px solid #0ea5e9 !important;
+  border-left: 18px solid #0ea5e9 !important;
+  color: #ffffff !important;
+}
+
+/* Optional tweaks */
+.header .content-cell { padding: 28px 0 !important; }
+.logo { height: auto !important; }
