@@ -3,21 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// probe (for debugging in cloud)
 Route::get('/ping', fn () => 'pong '.now());
-    return Inertia::render('Welcome');
-})->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// landing page (Inertia)
+Route::get('/', fn () => Inertia::render('Home'))->name('home');
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
-use App\Http\Controllers\PODController;
+// style guide (optional)
+Route::get('/style-guide', fn () => Inertia::render('StyleGuide'))->name('style-guide');
 
-Route::post('/loads/{load}/pod/submit', [PODController::class, 'submit'])
-    ->name('loads.pod.submit');
-use App\Http\Controllers\LoadPodController;
-
-Route::post('/loads/{load}/pod/submit', [LoadPodController::class, 'store'])
-    ->name('loads.pod.submit');
+// keep auth routes at the bottom
+require __DIR__ . '/auth.php';
