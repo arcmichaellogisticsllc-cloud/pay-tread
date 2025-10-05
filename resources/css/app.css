@@ -38,27 +38,28 @@
 }
 
 /* =========================================================
-   STEP 6 – Optional polish (letter-spacing + font features)
+   STEP 6 – Optional polish (progressive tracking + font features)
    ========================================================= */
 @layer base {
-  /* Keep body tracking neutral for readability */
+  /* Neutral, readable default for body text */
   body { letter-spacing: 0; }
 
-  /* Subtle tighter tracking on big headings for a quieter look */
-  h1, h2, h3 {
-    letter-spacing: -0.01em;
-    /* Optional: if headings feel airy/tight, tune line-height here */
-    /* line-height: 1.1;  // try 1.05–1.2 per display size/font weight */
-  }
+  /* Progressive tighter tracking on headings */
+  h1 { letter-spacing: -0.015em; }
+  h2 { letter-spacing: -0.01em; }
+  h3 { letter-spacing: -0.005em; }
+
+  /* Optional: if headings feel cramped/loose, tune line-height */
+  /* h1, h2, h3 { line-height: 1.1; }  // try 1.05–1.2 per font/weight */
 }
 
-/* Enable subtle stylistic/character variants when available (e.g., Inter) */
+/* Subtle stylistic sets (ignored if unsupported by the font) */
 html { font-feature-settings: "cv11", "ss01"; }
 
 /* ----------------------------
    (Optional) Utilities sandbox
    ---------------------------- */
-/* Put any small custom utilities here with @layer utilities if needed
+/* Add tiny custom utilities here if needed
 @layer utilities {
   .content-auto { content-visibility: auto; }
 }
