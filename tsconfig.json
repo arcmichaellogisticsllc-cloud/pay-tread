@@ -31,3 +31,10 @@
     "env.d.ts"
   ]
 }
+"compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["resources/js/*"]
+    }
+  }
+}
