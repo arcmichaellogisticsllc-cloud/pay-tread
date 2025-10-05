@@ -49,12 +49,33 @@
   h2 { letter-spacing: -0.01em; }
   h3 { letter-spacing: -0.005em; }
 
-  /* Optional: if headings feel cramped/loose, tune line-height */
-  /* h1, h2, h3 { line-height: 1.1; }  // try 1.05–1.2 per font/weight */
+  /* (Optional) If headings feel cramped/loose, set a line-height */
+  /* h1, h2, h3 { line-height: 1.1; }  // try 1.05–1.2 */
 }
 
 /* Subtle stylistic sets (ignored if unsupported by the font) */
 html { font-feature-settings: "cv11", "ss01"; }
+
+/* ----------------------------
+   Responsive tweaks for headings
+   ---------------------------- */
+@layer base {
+  @media (max-width: 640px) {
+    h1 { letter-spacing: -0.01em; }   /* slightly looser on small screens */
+    h2 { letter-spacing: -0.008em; }
+    h3 { letter-spacing: -0.004em; }
+  }
+}
+
+/* ----------------------------
+   Dark mode base colors (optional)
+   ---------------------------- */
+@layer base {
+  .dark body {
+    color: hsl(0 0% 92% / 1);
+    background: hsl(0 0% 7% / 1);
+  }
+}
 
 /* ----------------------------
    (Optional) Utilities sandbox
@@ -64,3 +85,4 @@ html { font-feature-settings: "cv11", "ss01"; }
   .content-auto { content-visibility: auto; }
 }
 */
+
