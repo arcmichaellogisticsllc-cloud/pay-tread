@@ -1,27 +1,19 @@
 import { defineConfig } from 'vite'
-import laravel from 'laravel-vite-plugin'
 import vue from '@vitejs/plugin-vue'
-import wayfinder from '@laravel/vite-plugin-wayfinder'
-import { fileURLToPath, URL } from 'node:url'   // <-- add this
+import { fileURLToPath, URL } from 'node:url'
+
+import * as WayfinderNS from '@laravel/vite-plugin-wayfinder'
+const wayfinder = (WayfinderNS as any).default ?? (WayfinderNS as any)
 
 export default defineConfig({
   plugins: [
-    laravel({
-      input: ['resources/js/app.ts'],
-      ssr: 'resources/js/ssr.ts',
-      refresh: true,
-    }),
-    wayfinder({ formVariants: true }),
-    vue({
-      template: {
-        transformAssetUrls: { base: null, includeAbsolute: false },
-      },
-    }),
+    vue(),
+    // call the resolved plugin factory
+    wayfinder(),
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./resources/js', import.meta.url)), // <-- key line
+      '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
     },
   },
 })
-
