@@ -1,36 +1,37 @@
+<!-- resources/js/pages/settings/Appearance.vue -->
 <script setup lang="ts">
-import routes, { appearanceRoutes, edit } from '@/routes/appearance'
+import { Head } from '@inertiajs/vue3'
 
-import { Head } from '@inertiajs/vue3';
+import AppearanceTabs from '@/components/AppearanceTabs.vue'
+import HeadingSmall from '@/components/HeadingSmall.vue'
+import { type BreadcrumbItem } from '@/types'
 
-import AppearanceTabs from '@/components/AppearanceTabs.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
-import { type BreadcrumbItem } from '@/types';
+import AppLayout from '@/layouts/AppLayout.vue'
+import SettingsLayout from '@/layouts/settings/Layout.vue'
 
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { edit } from '@/routes/appearance';
+// Alias the route export to avoid clashing with any local "edit"
+import { edit as editAppearance } from '@/routes/appearance'
 
 const breadcrumbItems: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: edit().url,
-    },
-];
+  {
+    title: 'Appearance settings',
+    href: editAppearance().url,
+  },
+]
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Appearance settings" />
+  <AppLayout :breadcrumbs="breadcrumbItems">
+    <Head title="Appearance settings" />
 
-        <SettingsLayout>
-            <div class="space-y-6">
-                <HeadingSmall
-                    title="Appearance settings"
-                    description="Update your account's appearance settings"
-                />
-                <AppearanceTabs />
-            </div>
-        </SettingsLayout>
-    </AppLayout>
+    <SettingsLayout>
+      <div class="space-y-6">
+        <HeadingSmall
+          title="Appearance settings"
+          description="Update your account's appearance settings"
+        />
+        <AppearanceTabs />
+      </div>
+    </SettingsLayout>
+  </AppLayout>
 </template>
