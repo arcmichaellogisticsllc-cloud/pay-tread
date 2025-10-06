@@ -19,10 +19,3 @@
   },
   "include": ["resources/**/*", "env.d.ts"]
 }
-/// <reference types="vite/client" />
-declare module '*.vue' {
-  import type { DefineComponent } from 'vue'
-  const component: DefineComponent<{}, {}, any>
-  export default component
-}
-node -e "JSON.parse(require('fs').readFileSync('tsconfig.json','utf8')); console.log('tsconfig OK')"
