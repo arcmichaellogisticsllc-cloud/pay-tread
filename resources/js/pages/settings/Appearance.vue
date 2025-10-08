@@ -1,19 +1,17 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3'
+import AppearanceTabs from '@/components/AppearanceTabs.vue'
+import HeadingSmall from '@/components/HeadingSmall.vue'
+import { type BreadcrumbItem } from '@/types'
+import AppLayout from '@/layouts/AppLayout.vue'
+import SettingsLayout from '@/layouts/settings/Layout.vue'
 
-import AppearanceTabs from '@/components/AppearanceTabs.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
-import { type BreadcrumbItem } from '@/types';
-
-import AppLayout from '@/layouts/AppLayout.vue';
-import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { edit } from '@/routes/appearance'
+import { edit as editAppearance } from '@/routes/appearance' // '/index' also OK
 
 const breadcrumbItems: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: edit().url,
-    },
+  { title: 'Appearance settings', href: editAppearance().url },
+]
+</script>
 ];
 </script>
 
