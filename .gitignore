@@ -28,5 +28,4 @@ yarn-error.log
 /.vscode
 /.zed
 !/resources/js/actions/**
-!/resources/js/routes/**
 !/resources/js/wayfinder/**
