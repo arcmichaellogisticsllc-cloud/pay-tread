@@ -6,7 +6,9 @@ import { type BreadcrumbItem } from '@/types'
 import AppLayout from '@/layouts/AppLayout.vue'
 import SettingsLayout from '@/layouts/settings/Layout.vue'
 
-import { edit as editAppearance } from '@/routes/appearance' // '/index' also OK
+import { edit as editAppearance } from '@/routes/appearance'
+// ...
+href: editAppearance().url
 
 const breadcrumbItems: BreadcrumbItem[] = [
   { title: 'Appearance settings', href: editAppearance().url },
