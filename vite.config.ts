@@ -5,12 +5,9 @@ import path from 'node:path'
 
 export default defineConfig({
   plugins: [
-    wayfinder({
-      input: ['resources/js/app.ts'],
-      refresh: true,
-    }),
+    wayfinder(),          // ← no `input` option here
     vue(),
-  ], // ← plugins array CLOSED and comma present
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'resources/js'),
