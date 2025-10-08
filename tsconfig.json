@@ -15,6 +15,5 @@
     "noEmit": true,
     "isolatedModules": true
   },
-  "include": ["resources/**/*", "env.d.ts"]
+  "include": ["resources/**/*.ts", "resources/**/*.vue", "resources/**/*.d.ts"]
 }
-

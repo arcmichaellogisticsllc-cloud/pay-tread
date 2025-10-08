@@ -1,122 +1,326 @@
-cat > resources/js/routes/two-factor/index.ts <<'EOF'
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
-import loginGen from './login'
-
+import loginDf2c2a from './login'
 /**
- * /two-factor-challenge (GET/HEAD)
- */
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticatedSessionController.php:42
+* @route '/two-factor-challenge'
+*/
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: login.url(options),
-  method: 'get',
+    url: login.url(options),
+    method: 'get',
 })
-login.definition = { methods: ['get','head'], url: '/two-factor-challenge' } as const
-login.url = (options?: RouteQueryOptions) => login.definition.url + queryParams(options)
-login.get = (o?: RouteQueryOptions) => ({ url: login.url(o), method: 'get' as const })
-login.head = (o?: RouteQueryOptions) => ({ url: login.url(o), method: 'head' as const })
+
+login.definition = {
+    methods: ["get","head"],
+    url: '/two-factor-challenge',
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * /user/two-factor-authentication (GET/HEAD)
- */
-export const show = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: show.url(options),
-  method: 'get',
-})
-show.definition = { methods: ['get','head'], url: '/user/two-factor-authentication' } as const
-show.url = (o?: RouteQueryOptions) => show.definition.url + queryParams(o)
-show.get = (o?: RouteQueryOptions) => ({ url: show.url(o), method: 'get' as const })
-show.head = (o?: RouteQueryOptions) => ({ url: show.url(o), method: 'head' as const })
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticatedSessionController.php:42
+* @route '/two-factor-challenge'
+*/
+login.url = (options?: RouteQueryOptions) => {
+    return login.definition.url + queryParams(options)
+}
 
 /**
- * /user/two-factor-authentication (POST)
- */
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticatedSessionController.php:42
+* @route '/two-factor-challenge'
+*/
+login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: login.url(options),
+    method: 'get',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticatedSessionController::login
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticatedSessionController.php:42
+* @route '/two-factor-challenge'
+*/
+login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: login.url(options),
+    method: 'head',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::enable
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:21
+* @route '/user/two-factor-authentication'
+*/
 export const enable = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-  url: enable.url(options),
-  method: 'post',
+    url: enable.url(options),
+    method: 'post',
 })
-enable.definition = { methods: ['post'], url: '/user/two-factor-authentication' } as const
-enable.url = (o?: RouteQueryOptions) => enable.definition.url + queryParams(o)
-enable.post = (o?: RouteQueryOptions) => ({ url: enable.url(o), method: 'post' as const })
+
+enable.definition = {
+    methods: ["post"],
+    url: '/user/two-factor-authentication',
+} satisfies RouteDefinition<["post"]>
 
 /**
- * /user/confirmed-two-factor-authentication (POST)
- */
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::enable
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:21
+* @route '/user/two-factor-authentication'
+*/
+enable.url = (options?: RouteQueryOptions) => {
+    return enable.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::enable
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:21
+* @route '/user/two-factor-authentication'
+*/
+enable.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: enable.url(options),
+    method: 'post',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\ConfirmedTwoFactorAuthenticationController::confirm
+* @see vendor/laravel/fortify/src/Http/Controllers/ConfirmedTwoFactorAuthenticationController.php:19
+* @route '/user/confirmed-two-factor-authentication'
+*/
 export const confirm = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-  url: confirm.url(options),
-  method: 'post',
+    url: confirm.url(options),
+    method: 'post',
 })
-confirm.definition = { methods: ['post'], url: '/user/confirmed-two-factor-authentication' } as const
-confirm.url = (o?: RouteQueryOptions) => confirm.definition.url + queryParams(o)
-confirm.post = (o?: RouteQueryOptions) => ({ url: confirm.url(o), method: 'post' as const })
+
+confirm.definition = {
+    methods: ["post"],
+    url: '/user/confirmed-two-factor-authentication',
+} satisfies RouteDefinition<["post"]>
 
 /**
- * /user/two-factor-authentication (DELETE)
- */
+* @see \Laravel\Fortify\Http\Controllers\ConfirmedTwoFactorAuthenticationController::confirm
+* @see vendor/laravel/fortify/src/Http/Controllers/ConfirmedTwoFactorAuthenticationController.php:19
+* @route '/user/confirmed-two-factor-authentication'
+*/
+confirm.url = (options?: RouteQueryOptions) => {
+    return confirm.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\ConfirmedTwoFactorAuthenticationController::confirm
+* @see vendor/laravel/fortify/src/Http/Controllers/ConfirmedTwoFactorAuthenticationController.php:19
+* @route '/user/confirmed-two-factor-authentication'
+*/
+confirm.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: confirm.url(options),
+    method: 'post',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::disable
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:35
+* @route '/user/two-factor-authentication'
+*/
 export const disable = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
-  url: disable.url(options),
-  method: 'delete',
+    url: disable.url(options),
+    method: 'delete',
 })
-disable.definition = { methods: ['delete'], url: '/user/two-factor-authentication' } as const
-disable.url = (o?: RouteQueryOptions) => disable.definition.url + queryParams(o)
-disable.delete = (o?: RouteQueryOptions) => ({ url: disable.url(o), method: 'delete' as const })
+
+disable.definition = {
+    methods: ["delete"],
+    url: '/user/two-factor-authentication',
+} satisfies RouteDefinition<["delete"]>
 
 /**
- * /user/two-factor-qr-code (GET/HEAD)
- */
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::disable
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:35
+* @route '/user/two-factor-authentication'
+*/
+disable.url = (options?: RouteQueryOptions) => {
+    return disable.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorAuthenticationController::disable
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorAuthenticationController.php:35
+* @route '/user/two-factor-authentication'
+*/
+disable.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: disable.url(options),
+    method: 'delete',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController::qrCode
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorQrCodeController.php:16
+* @route '/user/two-factor-qr-code'
+*/
 export const qrCode = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: qrCode.url(options),
-  method: 'get',
+    url: qrCode.url(options),
+    method: 'get',
 })
-qrCode.definition = { methods: ['get','head'], url: '/user/two-factor-qr-code' } as const
-qrCode.url = (o?: RouteQueryOptions) => qrCode.definition.url + queryParams(o)
-qrCode.get = (o?: RouteQueryOptions) => ({ url: qrCode.url(o), method: 'get' as const })
-qrCode.head = (o?: RouteQueryOptions) => ({ url: qrCode.url(o), method: 'head' as const })
+
+qrCode.definition = {
+    methods: ["get","head"],
+    url: '/user/two-factor-qr-code',
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * /user/two-factor-secret-key (GET/HEAD)
- */
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController::qrCode
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorQrCodeController.php:16
+* @route '/user/two-factor-qr-code'
+*/
+qrCode.url = (options?: RouteQueryOptions) => {
+    return qrCode.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController::qrCode
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorQrCodeController.php:16
+* @route '/user/two-factor-qr-code'
+*/
+qrCode.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: qrCode.url(options),
+    method: 'get',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorQrCodeController::qrCode
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorQrCodeController.php:16
+* @route '/user/two-factor-qr-code'
+*/
+qrCode.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: qrCode.url(options),
+    method: 'head',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorSecretKeyController::secretKey
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorSecretKeyController.php:18
+* @route '/user/two-factor-secret-key'
+*/
 export const secretKey = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: secretKey.url(options),
-  method: 'get',
+    url: secretKey.url(options),
+    method: 'get',
 })
-secretKey.definition = { methods: ['get','head'], url: '/user/two-factor-secret-key' } as const
-secretKey.url = (o?: RouteQueryOptions) => secretKey.definition.url + queryParams(o)
-secretKey.get = (o?: RouteQueryOptions) => ({ url: secretKey.url(o), method: 'get' as const })
-secretKey.head = (o?: RouteQueryOptions) => ({ url: secretKey.url(o), method: 'head' as const })
+
+secretKey.definition = {
+    methods: ["get","head"],
+    url: '/user/two-factor-secret-key',
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * /user/two-factor-recovery-codes (GET/HEAD, POST)
- */
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorSecretKeyController::secretKey
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorSecretKeyController.php:18
+* @route '/user/two-factor-secret-key'
+*/
+secretKey.url = (options?: RouteQueryOptions) => {
+    return secretKey.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorSecretKeyController::secretKey
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorSecretKeyController.php:18
+* @route '/user/two-factor-secret-key'
+*/
+secretKey.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: secretKey.url(options),
+    method: 'get',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\TwoFactorSecretKeyController::secretKey
+* @see vendor/laravel/fortify/src/Http/Controllers/TwoFactorSecretKeyController.php:18
+* @route '/user/two-factor-secret-key'
+*/
+secretKey.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: secretKey.url(options),
+    method: 'head',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::recoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:20
+* @route '/user/two-factor-recovery-codes'
+*/
 export const recoveryCodes = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: recoveryCodes.url(options),
-  method: 'get',
+    url: recoveryCodes.url(options),
+    method: 'get',
 })
-recoveryCodes.definition = { methods: ['get','head'], url: '/user/two-factor-recovery-codes' } as const
-recoveryCodes.url = (o?: RouteQueryOptions) => recoveryCodes.definition.url + queryParams(o)
-recoveryCodes.get = (o?: RouteQueryOptions) => ({ url: recoveryCodes.url(o), method: 'get' as const })
-recoveryCodes.head = (o?: RouteQueryOptions) => ({ url: recoveryCodes.url(o), method: 'head' as const })
 
-export const regenerateRecoveryCodes = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
-  url: regenerateRecoveryCodes.url(options),
-  method: 'post',
-})
-regenerateRecoveryCodes.definition = { methods: ['post'], url: '/user/two-factor-recovery-codes' } as const
-regenerateRecoveryCodes.url = (o?: RouteQueryOptions) => regenerateRecoveryCodes.definition.url + queryParams(o)
-regenerateRecoveryCodes.post = (o?: RouteQueryOptions) => ({ url: regenerateRecoveryCodes.url(o), method: 'post' as const })
+recoveryCodes.definition = {
+    methods: ["get","head"],
+    url: '/user/two-factor-recovery-codes',
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * Default export (optional convenience)
- */
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::recoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:20
+* @route '/user/two-factor-recovery-codes'
+*/
+recoveryCodes.url = (options?: RouteQueryOptions) => {
+    return recoveryCodes.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::recoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:20
+* @route '/user/two-factor-recovery-codes'
+*/
+recoveryCodes.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: recoveryCodes.url(options),
+    method: 'get',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::recoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:20
+* @route '/user/two-factor-recovery-codes'
+*/
+recoveryCodes.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: recoveryCodes.url(options),
+    method: 'head',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::regenerateRecoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:39
+* @route '/user/two-factor-recovery-codes'
+*/
+export const regenerateRecoveryCodes = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: regenerateRecoveryCodes.url(options),
+    method: 'post',
+})
+
+regenerateRecoveryCodes.definition = {
+    methods: ["post"],
+    url: '/user/two-factor-recovery-codes',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::regenerateRecoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:39
+* @route '/user/two-factor-recovery-codes'
+*/
+regenerateRecoveryCodes.url = (options?: RouteQueryOptions) => {
+    return regenerateRecoveryCodes.definition.url + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\RecoveryCodeController::regenerateRecoveryCodes
+* @see vendor/laravel/fortify/src/Http/Controllers/RecoveryCodeController.php:39
+* @route '/user/two-factor-recovery-codes'
+*/
+regenerateRecoveryCodes.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: regenerateRecoveryCodes.url(options),
+    method: 'post',
+})
+
 const twoFactor = {
-  login: Object.assign(login, loginGen),
-  show: Object.assign(show, show),
-  enable: Object.assign(enable, enable),
-  confirm: Object.assign(confirm, confirm),
-  disable: Object.assign(disable, disable),
-  qrCode: Object.assign(qrCode, qrCode),
-  secretKey: Object.assign(secretKey, secretKey),
-  recoveryCodes: Object.assign(recoveryCodes, recoveryCodes),
-  regenerateRecoveryCodes: Object.assign(regenerateRecoveryCodes, regenerateRecoveryCodes),
+    login: Object.assign(login, loginDf2c2a),
+    enable: Object.assign(enable, enable),
+    confirm: Object.assign(confirm, confirm),
+    disable: Object.assign(disable, disable),
+    qrCode: Object.assign(qrCode, qrCode),
+    secretKey: Object.assign(secretKey, secretKey),
+    recoveryCodes: Object.assign(recoveryCodes, recoveryCodes),
+    regenerateRecoveryCodes: Object.assign(regenerateRecoveryCodes, regenerateRecoveryCodes),
 }
 
 export default twoFactor
-EOF
