@@ -8,9 +8,7 @@ export default defineConfig({
     wayfinder(),          // ← no `input` option here
     vue(),
   ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'resources/js'),
+resolve: { alias: { '@': path.resolve(__dirname, 'resources/js'),
     },
   },
 })
