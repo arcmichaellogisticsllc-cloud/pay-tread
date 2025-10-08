@@ -1,31 +1,45 @@
-/.phpunit.cache
-/bootstrap/ssr
+# Dependencies / vendors
 /node_modules
+/vendor
+
+# Builds / hot reload
 /public/build
 /public/hot
+/bootstrap/ssr
+
+# Storage
 /public/storage
 /storage/*.key
-!resources/js/**
 /storage/pail
-/resources/js/actions
-/resources/js/routes
-/resources/js/wayfinder
-/vendor
-.DS_Store
+
+# Caches / test artifacts
+/.phpunit.cache
+.phpunit.result.cache
+
+# Environment / secrets
 .env
 .env.backup
 .env.production
-.phpactor.json
-.phpunit.result.cache
+/auth.json
+
+# Editors / OS
+.DS_Store
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+
+# Homestead
 Homestead.json
 Homestead.yaml
+
+# Logs
 npm-debug.log
 yarn-error.log
-/auth.json
-/.fleet
-/.idea
-/.nova
-/.vscode
-/.zed
+
+# --- Keep all front-end source (including route helpers) tracked ---
+!/resources/js/**
+!/resources/js/routes/**
 !/resources/js/actions/**
 !/resources/js/wayfinder/**
