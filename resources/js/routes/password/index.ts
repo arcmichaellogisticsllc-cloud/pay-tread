@@ -1,3 +1,14 @@
+// append to resources/js/routes/password/index.ts (if you want)
+import { type RouteQueryOptions, type RouteDefinition, queryParams } from '../../wayfinder'
+
+export const update = (o?: RouteQueryOptions): RouteDefinition<'put'> => ({
+  url: update.url(o),
+  method: 'put',
+})
+update.definition = { methods: ['put'], url: '/user/password' } as const
+update.url = (o?: RouteQueryOptions) => update.definition.url + queryParams(o)
+export { update }
+
 import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
 import confirmD7e05f from './confirm'
 /**
