@@ -2,9 +2,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "build:ssr": "vite build && vite build --ssr",
-    "dev": "vite",
+    "build": "PATH=/usr/bin:$PATH vite build",
+    "build:ssr": "PATH=/usr/bin:$PATH vite build && PATH=/usr/bin:$PATH vite build --ssr",
+    "dev": "PATH=/usr/bin:$PATH vite",
     "format": "prettier --write resources/",
     "format:check": "prettier --check resources/",
     "lint": "eslint . --fix"
@@ -20,6 +20,7 @@
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-vue": "^9.32.0",
+    "laravel-vite-plugin": "^2.0.1",
     "prettier": "^3.4.2",
     "prettier-plugin-organize-imports": "^4.1.0",
     "prettier-plugin-tailwindcss": "^0.6.11",
@@ -33,7 +34,6 @@
     "@vueuse/core": "^12.8.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "laravel-vite-plugin": "^2.0.0",
     "lucide-vue-next": "^0.468.0",
     "reka-ui": "^2.4.1",
     "signature_pad": "^4.2.0",
