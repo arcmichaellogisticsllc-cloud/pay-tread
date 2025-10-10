@@ -1,34 +1,30 @@
-// resources/js/routes/profile/index.ts
-import {
-  queryParams,
-  type RouteQueryOptions,
-  type RouteDefinition,
-} from '../wayfinder'
+// resources/js/routes/profile.ts
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from '../wayfinder'
 
-/** GET /settings/profile */
+/** GET /profile */
 export const edit = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({
   url: edit.url(o),
   method: 'get',
 })
-edit.definition = { methods: ['get', 'head'] as const, url: '/settings/profile' } as const
+edit.definition = { methods: ['get', 'head'], url: '/profile' } as const
 edit.url  = (o?: RouteQueryOptions) => edit.definition.url + queryParams(o)
 edit.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: edit.url(o),  method: 'get'  })
 edit.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: edit.url(o),  method: 'head' })
 
-/** PUT /settings/profile */
-export const update = (o?: RouteQueryOptions): RouteDefinition<'put'> => ({
+/** PATCH /profile */
+export const update = (o?: RouteQueryOptions): RouteDefinition<'patch'> => ({
   url: update.url(o),
-  method: 'put',
+  method: 'patch',
 })
-update.definition = { method: 'put' as const, url: '/settings/profile' } as const
+update.definition = { methods: ['patch'], url: '/profile' } as const
 update.url = (o?: RouteQueryOptions) => update.definition.url + queryParams(o)
+update.patch = (o?: RouteQueryOptions): RouteDefinition<'patch'> => ({ url: update.url(o), method: 'patch' })
 
-/** DELETE /settings/profile (optional, if you support account deletion here) */
+/** DELETE /profile */
 export const destroy = (o?: RouteQueryOptions): RouteDefinition<'delete'> => ({
   url: destroy.url(o),
   method: 'delete',
 })
-destroy.definition = { method: 'delete' as const, url: '/settings/profile' } as const
-destroy.url = (o?: RouteQueryOptions) => destroy.definition.url + queryParams(o)
-const profileRoutes = { edit, update, destroy };
-export default profileRoutes;
+destroy.definition = { methods: ['delete'], url: '/profile' } as const
+destroy.url   = (o?: RouteQueryOptions) => destroy.definition.url + queryParams(o)
+destroy.delete = (o?: RouteQueryOptions): RouteDefinition<'delete'> => ({ url: destroy.url(o), method: 'delete' })
