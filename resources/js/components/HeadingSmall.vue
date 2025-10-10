@@ -6,9 +6,7 @@ const props = withDefaults(defineProps<{
   description?: string
   as?: Level
   id?: string
-}>(), {
-  as: 'h2',
-})
+}>(), { as: 'h2' })
 
 const Tag = props.as
 </script>
@@ -25,14 +23,3 @@ const Tag = props.as
     </p>
   </header>
 </template>
-<script setup lang="ts">
-type Level = 'h2' | 'h3' | 'h4'
-const { title, description, as = 'h2', id } = defineProps<{
-  title: string
-  description?: string
-  as?: Level
-  id?: string
-}>()
-const Tag = as
-</script>
-  
