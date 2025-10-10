@@ -1,0 +1,13 @@
+{
+  "name": "pay-tread",
+  "image": "mcr.microsoft.com/devcontainers/php:8.2",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
+  },
+  "postCreateCommand": "composer install || true && npm install",
+  "forwardPorts": [8000, 5173],
+  "portsAttributes": {
+    "8000": { "label": "Laravel", "protocol": "http" },
+    "5173": { "label": "Vite", "protocol": "http" }
+  }
+}
