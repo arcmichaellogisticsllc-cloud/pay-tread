@@ -34,4 +34,22 @@ verify.url = (args: VerifyArgs, o?: RouteQueryOptions) => {
   const withDefaults = applyUrlDefaults(obj)
   const url =
     verify.definition.url
-      .replace('{id}', St
+      .replace('{id}', String(withDefaults.id))
+      .replace('{hash}', String(withDefaults.hash))
+      .replace(/\/+$/, '')
+  return url + queryParams(o)
+}
+verify.get  = (args: VerifyArgs, o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: verify.url(args, o),  method: 'get'  })
+verify.head = (args: VerifyArgs, o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: verify.url(args, o),  method: 'head' })
+
+/** POST /email/verification-notification */
+export const send = (o?: RouteQueryOptions): RouteDefinition<'post'> => ({
+  url: send.url(o),
+  method: 'post',
+})
+send.definition = { method: 'post' as const, url: '/email/verification-notification' } as const
+send.url = (o?: RouteQueryOptions) => send.definition.url + queryParams(o)
+
+/** Default export bundle */
+const verificationRoutes = { notice, verify, send }
+export default verificationRoutes
