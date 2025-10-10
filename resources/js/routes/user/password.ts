@@ -24,3 +24,5 @@ export const form = () => ({
   edit: edit(),
   update: { action: update().url, method: 'post' as const },
 })
+const userPasswordRoutes = { edit, update, form };
+export default userPasswordRoutes;

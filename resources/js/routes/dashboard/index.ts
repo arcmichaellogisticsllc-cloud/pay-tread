@@ -26,3 +26,5 @@ dashboard.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({
   url: dashboard.url(o),
   method: 'head',
 })
+const dashboardRoutes = { dashboard };
+export default dashboardRoutes;
