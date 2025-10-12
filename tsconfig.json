@@ -8,12 +8,22 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+
     "baseUrl": ".",
-    "paths": { "@/*": ["resources/js/*"] },
+    "paths": {
+      "@/*": ["resources/js/*"]
+    },
+
     "jsx": "preserve",
     "types": ["vite/client"],
     "noEmit": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+
+    "resolveJsonModule": true
   },
-  "include": ["resources/**/*.ts", "resources/**/*.vue", "resources/**/*.d.ts"]
+  "include": [
+    "resources/**/*.ts",
+    "resources/**/*.d.ts",
+    "resources/**/*.vue"
+  ]
 }

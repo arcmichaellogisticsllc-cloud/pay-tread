@@ -1,52 +1,95 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import HeadingSmall from '@/components/HeadingSmall.vue'
+import { useForm } from '@inertiajs/vue3'
 
-const form = ref({
+const form = useForm({
   current_password: '',
   password: '',
   password_confirmation: '',
 })
 
-const submitting = ref(false)
-
-async function submit(e: Event) {
-  e.preventDefault()
-  submitting.value = true
-  try {
-    await fetch('/user/password', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify(form.value),
-    })
-    // keep it simple for now
-    alert('Submitted (wire up real backend later)')
-  } finally {
-    submitting.value = false
-  }
+function submit() {
+  form.put('/user/password', {
+    preserveScroll: true,
+    onSuccess: () => {
+      form.reset('current_password', 'password', 'password_confirmation')
+    },
+  })
 }
 </script>
 
 <template>
-  <main class="max-w-xl mx-auto p-6 space-y-6">
-    <h1 class="text-2xl font-semibold">Password settings</h1>
+  <div class="mx-auto max-w-xl p-6">
+    <HeadingSmall
+      title="Password settings"
+      description="Update your account password."
+    />
 
-    <form @submit="submit" class="space-y-4">
+    <form @submit.prevent="submit" class="mt-6 space-y-6">
       <div>
-        <label class="block text-sm mb-1">Current password</label>
-        <input v-model="form.current_password" type="password" class="w-full border rounded px-3 py-2" />
-      </div>
-      <div>
-        <label class="block text-sm mb-1">New password</label>
-        <input v-model="form.password" type="password" class="w-full border rounded px-3 py-2" />
-      </div>
-      <div>
-        <label class="block text-sm mb-1">Confirm new password</label>
-        <input v-model="form.password_confirmation" type="password" class="w-full border rounded px-3 py-2" />
+        <label for="current_password" class="block text-sm font-medium text-gray-700">
+          Current password
+        </label>
+        <input
+          v-model="form.current_password"
+          id="current_password"
+          name="current_password"
+          type="password"
+          autocomplete="current-password"
+          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-black focus:ring-black"
+        />
+        <p v-if="form.errors.current_password" class="mt-2 text-sm text-red-600">
+          {{ form.errors.current_password }}
+        </p>
       </div>
 
-      <button :disabled="submitting" class="px-4 py-2 rounded bg-black text-white disabled:opacity-50">
-        {{ submitting ? 'Saving…' : 'Save' }}
-      </button>
+      <div>
+        <label for="password" class="block text-sm font-medium text-gray-700">
+          New password
+        </label>
+        <input
+          v-model="form.password"
+          id="password"
+          name="password"
+          type="password"
+          autocomplete="new-password"
+          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-black focus:ring-black"
+        />
+        <p v-if="form.errors.password" class="mt-2 text-sm text-red-600">
+          {{ form.errors.password }}
+        </p>
+      </div>
+
+      <div>
+        <label for="password_confirmation" class="block text-sm font-medium text-gray-700">
+          Confirm new password
+        </label>
+        <input
+          v-model="form.password_confirmation"
+          id="password_confirmation"
+          name="password_confirmation"
+          type="password"
+          class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-black focus:ring-black"
+        />
+        <p v-if="form.errors.password_confirmation" class="mt-2 text-sm text-red-600">
+          {{ form.errors.password_confirmation }}
+        </p>
+      </div>
+
+      <div class="pt-2">
+        <button
+          type="submit"
+          :disabled="form.processing"
+          class="inline-flex items-center rounded-md bg-black px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50"
+        >
+          <span v-if="form.processing">Saving…</span>
+          <span v-else>Save</span>
+        </button>
+
+        <span v-if="form.recentlySuccessful" class="ml-3 text-sm text-green-600">
+          Saved.
+        </span>
+      </div>
     </form>
-  </main>
+  </div>
 </template>
