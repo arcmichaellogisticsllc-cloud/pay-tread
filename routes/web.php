@@ -2,22 +2,26 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use App\Http\Controllers\Settings\AppearanceController;
+use App\Http\Controllers\Settings\PasswordController;
 
-// Dev convenience: home redirects to the page
-Route::get('/', fn () => redirect('/user/password'));
+Route::get('/', fn () => inertia('dashboard'))->name('dashboard.index');
 
-// Settings: Password page (GET) + submit (PUT)
-Route::get('/user/password', fn () => Inertia::render('settings/Password'));
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/settings/appearance', [AppearanceController::class, 'edit'])
+        ->name('settings.appearance.edit');
 
-Route::put('/user/password', function (Request $request) {
-    $request->validate([
-        'current_password' => ['required'],
-        'password'         => ['required', 'confirmed', 'min:8'],
-    ]);
-    // TODO: actually update the password
-    return back()->with('success', 'Password updated');
+    Route::get('/user/password', [PasswordController::class, 'edit'])
+        ->name('password.edit');
+
+    Route::put('/user/password', [PasswordController::class, 'update'])
+        ->name('password.update');
+
+    Route::post('/email/verification-notification', function (Request $request) {
+        if ($request->user()->hasVerifiedEmail()) return back();
+        $request->user()->sendEmailVerificationNotification();
+        return back()->with('status', 'verification-link-sent');
+    })->name('verification.send');
 });
 
-// Simple health check
 Route::get('/ping', fn () => 'pong');
