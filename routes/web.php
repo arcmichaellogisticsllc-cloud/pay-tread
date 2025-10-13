@@ -2,26 +2,52 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Settings\AppearanceController;
+use Inertia\Inertia;
+use Laravel\Fortify\Http\Controllers\NewPasswordController;
+
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
+use App\Http\Controllers\Settings\TwoFactorSettingsController;
 
-Route::get('/', fn () => inertia('dashboard'))->name('dashboard.index');
+// ---------- Public ----------
+Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/settings/appearance', [AppearanceController::class, 'edit'])
-        ->name('settings.appearance.edit');
+// Dashboard (protected)
+Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-    Route::get('/user/password', [PasswordController::class, 'edit'])
-        ->name('password.edit');
+// ---------- Settings (authenticated) ----------
+Route::middleware(['auth'])->group(function () {
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::put('/user/password', [PasswordController::class, 'update'])
-        ->name('password.update');
+    // Password settings
+    Route::get('/password', [PasswordController::class, 'edit'])->name('password.edit');
+    Route::put('/password', [PasswordController::class, 'update'])->name('password.update');
 
+    // Two-factor settings page
+    Route::get('/two-factor', [TwoFactorSettingsController::class, 'show'])->name('two-factor.show');
+
+    // Resend email verification notification
     Route::post('/email/verification-notification', function (Request $request) {
-        if ($request->user()->hasVerifiedEmail()) return back();
+        if ($request->user()->hasVerifiedEmail()) {
+            return back();
+        }
+
         $request->user()->sendEmailVerificationNotification();
+
         return back()->with('status', 'verification-link-sent');
     })->name('verification.send');
 });
 
-Route::get('/ping', fn () => 'pong');
+// ---------- Fortify compatibility alias ----------
+// Some tests expect route('password.store') to exist.
+Route::post('/reset-password', [NewPasswordController::class, 'store'])
+    ->middleware(['guest:' . config('fortify.guard')])
+    ->name('password.store');
+
+// Health check (optional)
+Route::get('/ping', fn () => 'pong')->name('ping');

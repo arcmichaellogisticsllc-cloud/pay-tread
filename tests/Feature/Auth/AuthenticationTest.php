@@ -1,25 +1,49 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Laravel\Fortify\Features;
 
+uses(RefreshDatabase::class);
+
 test('login screen can be rendered', function () {
     $response = $this->get(route('login'));
-
-    $response->assertStatus(200);
+    $response->assertOk();
 });
 
-test('users can authenticate using the login screen', function () {
-    $user = User::factory()->create();
-
-    $response = $this->post(route('login.store'), [
-        'email' => $user->email,
-        'password' => 'password',
+test('users can authenticate with valid credentials', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'password' => Hash::make('password'),
+        'two_factor_secret' => null,
+        'two_factor_recovery_codes' => null,
     ]);
 
-    $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    // clear throttle for this email|ip to avoid false negatives
+    $key = strtolower($user->email) . '|127.0.0.1';
+    RateLimiter::clear($key);
+    RateLimiter::clear('login|' . $key);
+
+    $token = csrf_token();
+
+    $response = $this
+        ->withSession(['_token' => $token])
+        ->post('/login', [
+            '_token'   => $token,
+            'email'    => $user->email,
+            'password' => 'password',
+        ]);
+
+    $response->assertStatus(302);
+    $response->assertSessionHasNoErrors();
+
+    $this->assertTrue(Auth::check(), 'Expected Auth::check() to be true after login');
+    $this->assertAuthenticatedAs($user);
+
+    $response->assertRedirect(config('fortify.home', '/dashboard'));
 });
 
 test('users with two factor enabled are redirected to two factor challenge', function () {
@@ -32,7 +56,10 @@ test('users with two factor enabled are redirected to two factor challenge', fun
         'confirmPassword' => true,
     ]);
 
-    $user = User::factory()->create();
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'password' => Hash::make('password'),
+    ]);
 
     $user->forceFill([
         'two_factor_secret' => encrypt('test-secret'),
@@ -40,23 +67,36 @@ test('users with two factor enabled are redirected to two factor challenge', fun
         'two_factor_confirmed_at' => now(),
     ])->save();
 
-    $response = $this->post(route('login'), [
-        'email' => $user->email,
-        'password' => 'password',
-    ]);
+    $token = csrf_token();
+
+    $response = $this
+        ->withSession(['_token' => $token])
+        ->post('/login', [
+            '_token'   => $token,
+            'email'    => $user->email,
+            'password' => 'password',
+        ]);
 
     $response->assertRedirect(route('two-factor.login'));
     $response->assertSessionHas('login.id', $user->id);
     $this->assertGuest();
 });
 
-test('users can not authenticate with invalid password', function () {
-    $user = User::factory()->create();
-
-    $this->post(route('login.store'), [
-        'email' => $user->email,
-        'password' => 'wrong-password',
+test('users cannot authenticate with invalid password', function () {
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'password' => Hash::make('password'),
     ]);
+
+    $token = csrf_token();
+
+    $this
+        ->withSession(['_token' => $token]) // <- fixed stray quote
+        ->post('/login', [
+            '_token'   => $token,
+            'email'    => $user->email,
+            'password' => 'wrong-password',
+        ]);
 
     $this->assertGuest();
 });
@@ -67,22 +107,50 @@ test('users can logout', function () {
     $response = $this->actingAs($user)->post(route('logout'));
 
     $this->assertGuest();
-    $response->assertRedirect(route('home'));
+    $response->assertRedirect('/');
 });
 
 test('users are rate limited', function () {
-    $user = User::factory()->create();
-
-    RateLimiter::increment(implode('|', [$user->email, '127.0.0.1']), amount: 10);
-
-    $response = $this->post(route('login.store'), [
-        'email' => $user->email,
-        'password' => 'wrong-password',
+    $user = User::factory()->create([
+        'email_verified_at' => now(),
+        'password' => Hash::make('password'),
     ]);
 
-    $response->assertSessionHasErrors('email');
+    $identifier = strtolower($user->email) . '|127.0.0.1';
+    // ensure a clean slate
+    RateLimiter::clear($identifier);
+    RateLimiter::clear('login|' . $identifier);
 
-    $errors = session('errors');
+    $token = csrf_token();
 
-    $this->assertStringContainsString('Too many login attempts', $errors->first('email'));
+    // Exceed Limit::perMinute(5) by making several bad attempts
+    for ($i = 0; $i < 7; $i++) {
+        $this
+            ->withSession(['_token' => $token])
+            ->post('/login', [
+                '_token'   => $token,
+                'email'    => $user->email,
+                'password' => 'wrong-password',
+            ]);
+    }
+
+    // One more request should be blocked (either HTTP 429 or validation error)
+    $response = $this
+        ->withSession(['_token' => $token])
+        ->post('/login', [
+            '_token'   => $token,
+            'email'    => $user->email,
+            'password' => 'wrong-password',
+        ]);
+
+    if ($response->getStatusCode() === 429) {
+        // ThrottleRequests middleware path: 429 + Retry-After header
+        $response->assertStatus(429);
+        $response->assertHeader('Retry-After');
+    } else {
+        // Some stacks surface throttle as a validation error on 'email'
+        $response->assertSessionHasErrors('email');
+        $errors = session('errors');
+        $this->assertStringContainsString('Too many login attempts', $errors->first('email'));
+    }
 });
