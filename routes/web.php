@@ -36,12 +36,15 @@ Route::middleware(['auth'])->group(function () {
         if ($request->user()->hasVerifiedEmail()) {
             return back();
         }
+
         $request->user()->sendEmailVerificationNotification();
+
         return back()->with('status', 'verification-link-sent');
     })->name('verification.send');
 });
 
-// Fortify compatibility alias expected by tests
+// ---------- Fortify compatibility alias ----------
+// Some tests expect route('password.store') to exist.
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware(['guest:' . config('fortify.guard')])
     ->name('password.store');
