@@ -1,20 +1,20 @@
 // vite.config.ts
+// vite.config.ts
 import { defineConfig } from 'vite'
 import laravel from 'laravel-vite-plugin'
-import vue from '@vitejs/plugin-vue'
-import path from 'path'
+import { wayfinder } from '@laravel/vite-plugin-wayfinder' // <-- named export
 
 export default defineConfig({
   plugins: [
     laravel({
-  input: ['resources/css/app.css', 'resources/js/app.ts'],
-  refresh: true,
+      input: ['resources/js/app.ts'],
+      refresh: true,
     }),
-    vue(), // 👈 required for .vue files
+    wayfinder(), // minimal setup is fine
   ],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'resources/js'),
+      '@': '/resources/js',
     },
   },
 })
