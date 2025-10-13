@@ -5,34 +5,34 @@ import {
   type RouteDefinition,
 } from '../wayfinder'
 
-// central re-exports (leaf modules live in their own folders)
-export * from './dashboard'                      // exports { dashboard }
+// ---------- central re-exports (leaf modules live in their own folders) ----------
+export * from './dashboard'                      // exports { dashboard } (points to '/')
 export * as appearance from './appearance'       // exposes { edit }
 export * as userPassword from './user/password'  // exposes { edit, update }
 export * from './profile'                        // exposes { edit, update, destroy }
 export * from './verification'                   // exposes { send }
 
-// Example top-level helpers:
+// ---------- top-level helpers ----------
 
 /** GET / (alias: home) */
 export const home = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({
   url: home.url(o),
   method: 'get',
-});
-home.definition = { methods: ['get', 'head'], url: '/' } as const;
-home.url  = (o?: RouteQueryOptions) => home.definition.url + queryParams(o);
-home.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: home.url(o),  method: 'get'  });
-home.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: home.url(o),  method: 'head' });
+})
+home.definition = { methods: ['get', 'head'], url: '/' } as const
+home.url  = (o?: RouteQueryOptions) => home.definition.url + queryParams(o)
+home.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: home.url(o),  method: 'get'  })
+home.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: home.url(o),  method: 'head' })
 
 /** GET /register */
 export const register = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({
   url: register.url(o),
   method: 'get',
-});
-register.definition = { methods: ['get', 'head'], url: '/register' } as const;
-register.url  = (o?: RouteQueryOptions) => register.definition.url + queryParams(o);
-register.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: register.url(o),  method: 'get'  });
-register.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: register.url(o),  method: 'head' });
+})
+register.definition = { methods: ['get', 'head'], url: '/register' } as const
+register.url  = (o?: RouteQueryOptions) => register.definition.url + queryParams(o)
+register.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: register.url(o),  method: 'get'  })
+register.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: register.url(o),  method: 'head' })
 
 /** GET /login */
 export const login = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({

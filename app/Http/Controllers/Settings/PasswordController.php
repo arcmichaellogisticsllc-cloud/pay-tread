@@ -5,26 +5,26 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password as PasswordRule;
+use Inertia\Inertia;
 
 class PasswordController extends Controller
 {
     public function edit()
     {
-        return inertia('settings/Password');
+        return Inertia::render('Settings/Password');
     }
 
     public function update(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', PasswordRule::defaults()],
+            'password' => ['required', 'confirmed', 'min:8'],
         ]);
 
-        $request->user()->forceFill([
-            'password' => Hash::make($validated['password']),
-        ])->save();
+        $request->user()->update([
+            'password' => Hash::make($request->input('password')),
+        ]);
 
-        return back()->with('status', 'password-updated');
+        return redirect()->route('password.edit')->with('status', 'password-updated');
     }
 }
