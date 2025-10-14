@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Settings;
 
 use App\Http\Requests\StorePodSignatureRequest;
 use App\Models\Load;
