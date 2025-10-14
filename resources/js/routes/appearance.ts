@@ -1,4 +1,5 @@
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from '../wayfinder'
+// resources/js/routes/appearance.ts
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from '@/wayfinder'
 
 /** GET /settings/appearance */
 export const edit = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({
