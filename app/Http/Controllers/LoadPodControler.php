@@ -3,44 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePodSignatureRequest;
-use App\Models\Load; // adjust namespace if yours differs
+use App\Models\Load;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class LoadPodController extends Controller
 {
     public function store(StorePodSignatureRequest $request, Load $load): RedirectResponse
     {
-        // Optional auth/policy check:
+        // If you have policies:
         // $this->authorize('update', $load);
 
-        // Decode data URL to a PNG and store it, or keep the data URL as-is.
-        $dataUrl = $request->validated()['signature_png'];
-        $path = null;
+        $validated = $request->validated();
 
+        $dataUrl = $validated['signature_png'];
+        $storedPath = null;
+
+        // Save as file if it's a data URL PNG
         if (preg_match('/^data:image\/png;base64,/', $dataUrl)) {
-            $pngData = base64_decode(substr($dataUrl, strpos($dataUrl, ',') + 1));
-            $filename = 'pod_signatures/'.now()->format('Ymd_His')."_load{$load->id}.png";
-            $path = Storage::disk('public')->put($filename, $pngData) ? $filename : null;
+            $pngData = base64_decode(substr($dataUrl, strpos($dataUrl, ',') + 1), true);
+
+            if ($pngData !== false) {
+                $relativePath = 'pod_signatures/' . now()->format('Ymd_His') . '_' . Str::uuid() . "_load{$load->id}.png";
+                // store on the 'public' disk so Storage::disk('public')->url($relativePath) works
+                $ok = Storage::disk('public')->put($relativePath, $pngData);
+
+                if ($ok) {
+                    $storedPath = $relativePath; // path relative to the 'public' disk
+                }
+            }
         }
 
-        // Persist fields on the Load (adjust column names to your schema)
+        // Persist fields (adjust column names to your schema)
         $load->update([
-            'pod_signer_name'        => $request->string('signer_name'),
-            'pod_signer_role'        => $request->string('signer_role'),
-            'pod_signature_path'     => $path,                    // stored file path
-            'pod_signature_data_url' => $path ? null : $dataUrl,  // fallback if you keep data URL
+            'pod_signer_name'        => (string) $request->string('signer_name'),
+            'pod_signer_role'        => (string) $request->string('signer_role'),
+            'pod_signature_path'     => $storedPath,           // file path on 'public' disk
+            'pod_signature_data_url' => $storedPath ? null : $dataUrl, // keep data URL only if no file stored
             'pod_lat'                => $request->float('lat'),
             'pod_lng'                => $request->float('lng'),
             'pod_accuracy_m'         => $request->integer('accuracy_m'),
-            'pod_receiver_email'     => $request->string('receiver_email'),
-            'pod_receiver_phone'     => $request->string('receiver_phone_e164'),
+            'pod_receiver_email'     => (string) $request->string('receiver_email'),
+            'pod_receiver_phone'     => (string) $request->string('receiver_phone_e164'),
             'pod_submitted_at'       => now(),
-            'status'                 => 'pod_submitted', // if you track status
+            'status'                 => 'pod_submitted',
         ]);
 
-        // Optionally dispatch events / jobs here (Priority Passport checks, emails, etc.)
+        // Optionally: events / notifications here
 
-        return back()->with('success', 'POD submitted.');
+        return redirect()
+            ->route('loads.show', $load)
+            ->with('success', 'POD submitted.');
     }
 }
+
