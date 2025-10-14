@@ -3,8 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Laravel\Fortify\Http\Controllers\NewPasswordController;
 
+// Controllers
+use Laravel\Fortify\Http\Controllers\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\TwoFactorSettingsController;
@@ -12,7 +14,20 @@ use App\Http\Controllers\Settings\TwoFactorSettingsController;
 // ---------- Public ----------
 Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
-// Dashboard (protected)
+// Password reset (request reset link) - guest
+Route::middleware(['guest:' . config('fortify.guard')])->group(function () {
+    Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+
+    // Fortify compatibility alias: route('password.store')
+    Route::post('/reset-password', [NewPasswordController::class, 'store'])
+        ->name('password.store');
+});
+
+// Health check (optional)
+Route::get('/ping', fn () => 'pong')->name('ping');
+
+// ---------- Dashboard (protected) ----------
 Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -36,18 +51,7 @@ Route::middleware(['auth'])->group(function () {
         if ($request->user()->hasVerifiedEmail()) {
             return back();
         }
-
         $request->user()->sendEmailVerificationNotification();
-
         return back()->with('status', 'verification-link-sent');
     })->name('verification.send');
 });
-
-// ---------- Fortify compatibility alias ----------
-// Some tests expect route('password.store') to exist.
-Route::post('/reset-password', [NewPasswordController::class, 'store'])
-    ->middleware(['guest:' . config('fortify.guard')])
-    ->name('password.store');
-
-// Health check (optional)
-Route::get('/ping', fn () => 'pong')->name('ping');
