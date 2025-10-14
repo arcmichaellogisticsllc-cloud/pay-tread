@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::store
-* @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:31
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -15,8 +15,8 @@ store.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::store
-* @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:31
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ store.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\Auth\AuthenticatedSessionController::store
-* @see app/Http/Controllers/Auth/AuthenticatedSessionController.php:31
+* @see \Laravel\Fortify\Http\Controllers\AuthenticatedSessionController::store
+* @see vendor/laravel/fortify/src/Http/Controllers/AuthenticatedSessionController.php:58
 * @route '/login'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

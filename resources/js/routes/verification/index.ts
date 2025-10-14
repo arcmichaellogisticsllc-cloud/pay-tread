@@ -1,44 +1,144 @@
-// resources/js/routes/verification/index.ts
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from '../../wayfinder'
-
-/** GET /verify-email  (Email verification prompt/notice) */
-export const notice = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: notice.url(o),
-  method: 'get',
+import { queryParams, type RouteQueryOptions, type RouteDefinition, applyUrlDefaults } from './../../wayfinder'
+/**
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
+* @route '/email/verify'
+*/
+export const notice = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: notice.url(options),
+    method: 'get',
 })
-notice.definition = { methods: ['get', 'head'], url: '/verify-email' } as const
-notice.url  = (o?: RouteQueryOptions) => notice.definition.url + queryParams(o)
-notice.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: notice.url(o),  method: 'get'  })
-notice.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: notice.url(o),  method: 'head' })
+
+notice.definition = {
+    methods: ["get","head"],
+    url: '/email/verify',
+} satisfies RouteDefinition<["get","head"]>
 
 /**
- * GET /verify-email/{id}/{hash}  (Verify link target)
- * Pass id/hash if you want a concrete URL; if omitted, placeholders remain (useful for debugging).
- */
-type VerifyOpts = RouteQueryOptions & { id?: string | number; hash?: string }
-export const verify = (o?: VerifyOpts): RouteDefinition<'get'> => ({
-  url: verify.url(o),
-  method: 'get',
-})
-verify.definition = { methods: ['get', 'head'], url: '/verify-email/:id/:hash' } as const
-verify.url = (o?: VerifyOpts) => {
-  const id   = o?.id ?? ':id'
-  const hash = o?.hash ?? ':hash'
-  const path = `/verify-email/${encodeURIComponent(String(id))}/${encodeURIComponent(String(hash))}`
-  return path + queryParams(o)
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
+* @route '/email/verify'
+*/
+notice.url = (options?: RouteQueryOptions) => {
+    return notice.definition.url + queryParams(options)
 }
-verify.get  = (o?: VerifyOpts): RouteDefinition<'get'>  => ({ url: verify.url(o),  method: 'get'  })
-verify.head = (o?: VerifyOpts): RouteDefinition<'head'> => ({ url: verify.url(o),  method: 'head' })
 
-/** POST /email/verification-notification (Resend verification email) */
-export const send = (o?: RouteQueryOptions): RouteDefinition<'post'> => ({
-  url: send.url(o),
-  method: 'post',
+/**
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
+* @route '/email/verify'
+*/
+notice.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: notice.url(options),
+    method: 'get',
 })
-send.definition = { methods: ['post'], url: '/email/verification-notification' } as const
-send.url  = (o?: RouteQueryOptions) => send.definition.url + queryParams(o)
-send.post = (o?: RouteQueryOptions): RouteDefinition<'post'> => ({ url: send.url(o), method: 'post' })
 
-/* Default export bundle */
-const verificationRoutes = { notice, verify, send }
-export default verificationRoutes
+/**
+* @see \Laravel\Fortify\Http\Controllers\EmailVerificationPromptController::notice
+* @see vendor/laravel/fortify/src/Http/Controllers/EmailVerificationPromptController.php:18
+* @route '/email/verify'
+*/
+notice.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: notice.url(options),
+    method: 'head',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
+* @route '/email/verify/{id}/{hash}'
+*/
+export const verify = (args: { id: string | number, hash: string | number } | [id: string | number, hash: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: verify.url(args, options),
+    method: 'get',
+})
+
+verify.definition = {
+    methods: ["get","head"],
+    url: '/email/verify/{id}/{hash}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
+* @route '/email/verify/{id}/{hash}'
+*/
+verify.url = (args: { id: string | number, hash: string | number } | [id: string | number, hash: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            id: args[0],
+            hash: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        id: args.id,
+        hash: args.hash,
+    }
+
+    return verify.definition.url
+            .replace('{id}', parsedArgs.id.toString())
+            .replace('{hash}', parsedArgs.hash.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
+* @route '/email/verify/{id}/{hash}'
+*/
+verify.get = (args: { id: string | number, hash: string | number } | [id: string | number, hash: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: verify.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \Laravel\Fortify\Http\Controllers\VerifyEmailController::verify
+* @see vendor/laravel/fortify/src/Http/Controllers/VerifyEmailController.php:18
+* @route '/email/verify/{id}/{hash}'
+*/
+verify.head = (args: { id: string | number, hash: string | number } | [id: string | number, hash: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: verify.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see routes/web.php:46
+* @route '/email/verification-notification'
+*/
+export const send = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: send.url(options),
+    method: 'post',
+})
+
+send.definition = {
+    methods: ["post"],
+    url: '/email/verification-notification',
+} satisfies RouteDefinition<["post"]>
+
+/**
+* @see routes/web.php:46
+* @route '/email/verification-notification'
+*/
+send.url = (options?: RouteQueryOptions) => {
+    return send.definition.url + queryParams(options)
+}
+
+/**
+* @see routes/web.php:46
+* @route '/email/verification-notification'
+*/
+send.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
+    url: send.url(options),
+    method: 'post',
+})
+
+const verification = {
+    notice: Object.assign(notice, notice),
+    verify: Object.assign(verify, verify),
+    send: Object.assign(send, send),
+}
+
+export default verification

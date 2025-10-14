@@ -43,3 +43,6 @@ yarn-error.log
 !/resources/js/routes/**
 !/resources/js/actions/**
 !/resources/js/wayfinder/**
+
+# Volar generated types
+.volar/
