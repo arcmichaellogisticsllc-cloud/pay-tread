@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
 
-import appearance from '@/routes/appearance'
+import appearance from '@/routes/appearance' 
 import HeadingSmall from '@/components/HeadingSmall.vue'
 import { type BreadcrumbItem } from '@/types'
 
