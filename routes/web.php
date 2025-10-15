@@ -8,15 +8,14 @@ use Inertia\Inertia;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\TwoFactorSettingsController;
-// use App\Http\Controllers\Settings\LoadPodController; // uncomment if you add the route
 
-// Fortify controllers (vendor)
+// Fortify (vendor) controller
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 
 // ---------- Public ----------
 Route::get('/', fn () => Inertia::render('welcome'))->name('home');
 
-// Dashboard (protected)
+// ---------- Dashboard (protected) ----------
 Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
@@ -47,17 +46,22 @@ Route::middleware(['auth'])->group(function () {
         if ($request->user()->hasVerifiedEmail()) {
             return back();
         }
+
         $request->user()->sendEmailVerificationNotification();
+
         return back()->with('status', 'verification-link-sent');
     })->name('verification.send');
 
-    // POD route (only if you actually use it)
+    // POD route (enable only if you use it)
     // Route::post('/loads/{load}/pod', [LoadPodController::class, 'store'])->name('loads.pod.store');
 });
 
 // ---------- Auth endpoints (guest) ----------
 Route::middleware(['guest:' . config('fortify.guard')])->group(function () {
+    // Forgot password email (Fortify handles this path; no PHP controller import required)
     Route::post('/forgot-password', fn () => null)->name('password.email');
+
+    // Reset password (Fortify vendor controller)
     Route::post('/reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
 });
@@ -67,5 +71,5 @@ Route::post('/two-factor-challenge', fn () => null)
     ->middleware(['guest:' . config('fortify.guard')])
     ->name('two-factor.challenge.post');
 
-// Health check (optional)
+// ---------- Health check ----------
 Route::get('/ping', fn () => 'pong')->name('ping');
