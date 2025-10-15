@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3'
 import AppLayout from '@/layouts/AppLayout.vue'
+import PlaceholderPattern from '@/components/PlaceholderPattern.vue' // uses @ alias
 import { Button } from '@/components/ui/button'
-
-// If you have these in your UI library; otherwise the plain divs will still render.
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import type { BreadcrumbItem } from '@/types'
 
-// --- Mock data (replace with API/inertia props later) ---
+// Wayfinder-safe breadcrumb (no route helper needed)
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Dashboard', href: '/dashboard' },
+]
+
+// --- Mock data (replace with props when API is ready) ---
 type Kpi = { label: string; value: string; sublabel?: string }
 const kpis: Kpi[] = [
   { label: 'Active Loads', value: '12', sublabel: '3 in transit' },
@@ -43,27 +48,40 @@ const invoices: InvoiceRow[] = [
   { id: 'i3', number: 'INV-2037', customer: 'Soylent', amount: '$8,010', due: 'Paid', status: 'paid' },
 ]
 
-// Simple helpers
+// Badge helper
 function pillClass(status: LoadRow['status'] | InvoiceRow['status']) {
   const base = 'rounded-full px-2.5 py-0.5 text-xs font-medium'
   switch (status) {
-    case 'in_transit': return `${base} bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300`
-    case 'assigned': return `${base} bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300`
-    case 'delivered': return `${base} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300`
-    case 'pod_submitted': return `${base} bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300`
-    case 'open': return `${base} bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300`
-    case 'overdue': return `${base} bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300`
-    case 'paid': return `${base} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300`
-    default: return `${base} bg-muted text-foreground`
+    case 'in_transit':   return `${base} bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300`
+    case 'assigned':     return `${base} bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300`
+    case 'delivered':    return `${base} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300`
+    case 'pod_submitted':return `${base} bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300`
+    case 'open':         return `${base} bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300`
+    case 'overdue':      return `${base} bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300`
+    case 'paid':         return `${base} bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300`
+    default:             return `${base} bg-muted text-foreground`
   }
 }
 </script>
 
 <template>
-  <AppLayout>
+  <AppLayout :breadcrumbs="breadcrumbs">
     <Head title="Dashboard" />
 
-    <!-- Top KPIs -->
+    <!-- Optional hero placeholders: remove when real widgets are ready -->
+    <div class="grid gap-4 p-4 md:grid-cols-3">
+      <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+        <PlaceholderPattern />
+      </div>
+      <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+        <PlaceholderPattern />
+      </div>
+      <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
+        <PlaceholderPattern />
+      </div>
+    </div>
+
+    <!-- KPIs -->
     <div class="grid gap-4 p-4 md:grid-cols-3">
       <Card v-for="k in kpis" :key="k.label" class="shadow-sm">
         <CardHeader class="pb-2">
@@ -76,7 +94,7 @@ function pillClass(status: LoadRow['status'] | InvoiceRow['status']) {
       </Card>
     </div>
 
-    <!-- Two columns: Loads + Invoices -->
+    <!-- Loads + Invoices -->
     <div class="grid gap-4 p-4 lg:grid-cols-3">
       <!-- Recent Loads -->
       <Card class="lg:col-span-2 shadow-sm">
@@ -141,24 +159,19 @@ function pillClass(status: LoadRow['status'] | InvoiceRow['status']) {
       </Card>
     </div>
 
-    <!-- Activity / Next actions -->
+    <!-- Next actions -->
     <div class="grid gap-4 p-4 lg:grid-cols-3">
       <Card class="lg:col-span-3 shadow-sm">
         <CardHeader>
           <CardTitle>Next Actions</CardTitle>
         </CardHeader>
         <CardContent class="grid gap-3 md:grid-cols-3">
-          <Button as-child variant="default">
-            <a href="/loads/create">Create Load</a>
-          </Button>
-          <Button as-child variant="outline">
-            <a href="/invoices/create">Create Invoice</a>
-          </Button>
-          <Button as-child variant="outline">
-            <a href="/two-factor">Review 2FA Settings</a>
-          </Button>
+          <Button as-child variant="default"><a href="/loads/create">Create Load</a></Button>
+          <Button as-child variant="outline"><a href="/invoices/create">Create Invoice</a></Button>
+          <Button as-child variant="outline"><a href="/two-factor">Review 2FA Settings</a></Button>
         </CardContent>
       </Card>
     </div>
   </AppLayout>
 </template>
+
