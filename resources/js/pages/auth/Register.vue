@@ -8,7 +8,6 @@ import AuthBase from '@/layouts/AuthLayout.vue'
 import { login } from '@/routes'
 import { Head, useForm } from '@inertiajs/vue3'
 import { LoaderCircle } from 'lucide-vue-next'
-import { register as registerRoute } from '@/routes'
 
 const form = useForm({
   name: '',
@@ -18,9 +17,9 @@ const form = useForm({
 })
 
 function submit() {
-  form.post(registerRoute.url(), {
+  // Post directly to Fortify's registration endpoint
+  form.post('/register', {
     onSuccess: () => {
-      // Clear sensitive fields on success
       form.reset('password', 'password_confirmation')
     },
   })

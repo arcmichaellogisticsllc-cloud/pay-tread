@@ -6,24 +6,22 @@
     "lib": ["ESNext", "DOM"],
     "strict": true,
     "skipLibCheck": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["resources/js/*"]
-    },
-
-    "jsx": "preserve",
-    "types": ["vite/client"],
-    "noEmit": true,
+    "resolveJsonModule": true,
     "isolatedModules": true,
-
-    "resolveJsonModule": true
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": { "@/*": ["resources/js/*"] },
+    "types": ["vite/client"]
   },
   "include": [
-    "resources/**/*.ts",
-    "resources/**/*.d.ts",
-    "resources/**/*.vue"
-  ]
+    "resources/js/**/*.ts",
+    "resources/js/**/*.vue",
+    "resources/js/**/*.d.ts",
+    "resources/js/env.d.ts",
+    "vite.config.ts"
+  ],
+  "exclude": ["node_modules", "vendor"],
+  "vueCompilerOptions": {
+    "globalTypesPath": "./.volar"
+  }
 }

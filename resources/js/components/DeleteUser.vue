@@ -1,18 +1,22 @@
-<!-- resources/js/components/DeleteUser.vue -->
 <script setup lang="ts">
-import ProfileController from '@/actions/settings/profileController';
+import { useForm } from '@inertiajs/vue3'
 
-const destroy = ProfileController.destroy.form();
+const form = useForm({})
+
+function destroy() {
+  if (confirm('Delete your account? This cannot be undone.')) {
+    form.delete('/profile')
+  }
+}
 </script>
 
 <template>
-  <form :action="destroy.action" :method="destroy.method" class="space-y-4">
-    <input type="hidden" name="_method" value="delete" />
-    <p class="text-sm text-gray-600">
-      Deleting your account is permanent. This action cannot be undone.
-    </p>
-    <button type="submit" class="px-4 py-2 rounded bg-red-600 text-white">
-      Delete Account
-    </button>
-  </form>
+  <button
+    type="button"
+    @click="destroy"
+    :disabled="form.processing"
+    class="rounded bg-red-600 px-4 py-2 text-white disabled:opacity-50"
+  >
+    Delete account
+  </button>
 </template>
