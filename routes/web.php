@@ -58,6 +58,9 @@ Route::middleware(['auth'])->group(function () {
         $request->user()->sendEmailVerificationNotification();
         return back()->with('status', 'verification-link-sent');
     })->name('verification.send');
+
+    // POD route (enable only if you use it)
+    // Route::post('/loads/{load}/pod', [LoadPodController::class, 'store'])->name('loads.pod.store');
 });
 
 /*
