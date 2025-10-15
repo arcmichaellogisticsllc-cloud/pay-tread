@@ -4,8 +4,12 @@ import { createApp, h } from 'vue'
 import { createInertiaApp } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 
+const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
+
 createInertiaApp({
-  // one resolver only
+  title: (title) => (title ? `${title} - ${appName}` : appName),
+
+  // Single resolver that matches ./pages/** structure
   resolve: (name) =>
     resolvePageComponent(
       `./pages/${name}.vue`,
@@ -20,3 +24,4 @@ createInertiaApp({
 
   progress: { color: '#4B5563' },
 })
+

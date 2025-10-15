@@ -13,7 +13,7 @@ use App\Http\Controllers\Settings\TwoFactorSettingsController;
 use Laravel\Fortify\Http\Controllers\NewPasswordController;
 
 // ---------- Public ----------
-Route::get('/', fn () => Inertia::render('welcome'))->name('home');
+Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
 
 // ---------- Dashboard (protected) ----------
 Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
@@ -46,9 +46,7 @@ Route::middleware(['auth'])->group(function () {
         if ($request->user()->hasVerifiedEmail()) {
             return back();
         }
-
         $request->user()->sendEmailVerificationNotification();
-
         return back()->with('status', 'verification-link-sent');
     })->name('verification.send');
 
