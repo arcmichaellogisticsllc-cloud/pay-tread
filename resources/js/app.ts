@@ -7,14 +7,12 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel'
 
 createInertiaApp({
+  // Set document title
   title: (title) => (title ? `${title} - ${appName}` : appName),
 
   // Single resolver that matches ./pages/** structure
   resolve: (name) =>
-    resolvePageComponent(
-      `./pages/${name}.vue`,
-      import.meta.glob('./pages/**/*.vue')
-    ),
+    resolvePageComponent(`./pages/${name}.vue`, import.meta.glob('./pages/**/*.vue')),
 
   setup({ el, App, props, plugin }) {
     createApp({ render: () => h(App, props) })
