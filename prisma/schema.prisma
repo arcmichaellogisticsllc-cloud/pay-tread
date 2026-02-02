@@ -1,0 +1,237 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Note: enums removed for SQLite compatibility. Use string fields with
+// well-known values instead (e.g. "CREATED", "ASSIGNED", "ENROUTE", ...).
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  users User[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  roleId    Int
+  role      Role     @relation(fields: [roleId], references: [id])
+  // profile stored as JSON string for SQLite dev (parse in application)
+  profile   String?
+  // KYC status: 'UNVERIFIED' | 'PENDING' | 'VERIFIED'
+  kycStatus String   @default("UNVERIFIED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  wallets   Wallet[]
+  // relations to support Load, Rating, Notifications, assets, payout requests
+  shipperToLoads Load[] @relation("shipperToLoads")
+  carrierToLoads Load[] @relation("carrierToLoads")
+  receiverToLoads Load[] @relation("receiverToLoads")
+  raterToRatings Rating[] @relation("raterToRatings")
+  rateeToRatings Rating[] @relation("rateeToRatings")
+  notifications Notification[]
+  assets CarrierAsset[]
+  payoutRequests PayoutRequest[]
+}
+
+model Load {
+  id            String   @id @default(uuid())
+  externalRef   String?  @unique
+  reference     String?  @map("reference")
+  shipperId     String?
+  receiverId    String?
+  brokerId      String?
+  carrierId     String?
+  grossAmount   Int
+  rateCents     Int?
+  currency      String   @default("USD")
+  pickupAddress String?
+  pickupDatetime DateTime?
+  deliveryAddress String?
+  deliveryDatetime DateTime?
+  miles         Int?
+  acceptedAt    DateTime?
+  deliveredAt   DateTime?
+  status        String @default("CREATED")
+  paymentMethod String? 
+  // accessorials stored as JSON string for SQLite dev
+  accessorials  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  pods          Pod[]
+  payouts       Payout[]
+  advances      Advance[]
+  notes         String?
+
+  // inverse relations
+  payoutRequestToLoads PayoutRequestToLoad[]
+  ratings Rating[]
+
+  // relations
+  shipper User? @relation("shipperToLoads", fields: [shipperId], references: [id])
+  assignedCarrier User? @relation("carrierToLoads", fields: [carrierId], references: [id])
+  receiver User? @relation("receiverToLoads", fields: [receiverId], references: [id])
+}
+
+model Pod {
+  id          String   @id @default(uuid())
+  loadId      String
+  uploadedBy  String
+  s3Key       String?
+  mime        String?
+  checksum    String?
+  submittedAt DateTime?
+  uploadedAt  DateTime?
+  approvedAt  DateTime?
+  approvedBy  String?
+  status      String   @default("SUBMITTED")
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  load Load @relation(fields: [loadId], references: [id])
+}
+
+model CarrierAsset {
+  id           String   @id @default(uuid())
+  ownerId      String
+  assetType    String
+  name         String?
+  vin          String?
+  plate        String?
+  capacityLbs  Int?
+  docsS3Key    String?
+  createdAt    DateTime @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      String @default("INFO")
+  forUserId String
+  message   String
+  link      String?
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  forUser User @relation(fields: [forUserId], references: [id])
+}
+
+model Wallet {
+  id            String               @id @default(uuid())
+  ownerId       String
+  balanceCents   Int                 @default(0)
+  pendingCents   Int                 @default(0)
+  clearedCents   Int                 @default(0)
+  weekStart      DateTime?
+  weekEnd        DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  owner         User                 @relation(fields: [ownerId], references: [id])
+  transactions  WalletTransaction[]
+}
+
+model WalletTransaction {
+  id                String   @id @default(uuid())
+  walletId          String
+  loadId            String?
+  type              String
+  amountCents       Int
+  balanceAfterCents Int
+  // metadata stored as JSON string for SQLite dev
+  metadata          String?
+  createdAt         DateTime @default(now())
+  createdBy         String?
+  immutable         Boolean  @default(true)
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+  // opposite relation to Payout (one-to-one optional)
+  payout Payout?
+  @@index([createdAt])
+}
+
+model Payout {
+  id                 String   @id @default(uuid())
+  loadId             String?
+  walletTransactionId String? @unique
+  idempotencyKey     String?  @unique
+  amountCents        Int
+  method             String
+  status             String   @default("REQUESTED")
+  requestedBy        String?
+  processedAt        DateTime?
+  externalPaymentId  String?  @unique
+  failureReason      String?
+  createdAt          DateTime @default(now())
+
+  // relation back to Load
+  load Load? @relation(fields: [loadId], references: [id])
+
+  // relation to the wallet transaction that represents this payout
+  walletTransaction WalletTransaction? @relation(fields: [walletTransactionId], references: [id])
+}
+
+model PayoutRequest {
+  id          String   @id @default(uuid())
+  ownerId     String
+  amountCents Int
+  status      String   @default("REQUESTED")
+  requestedAt DateTime @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id])
+  relatedLoads PayoutRequestToLoad[]
+}
+
+model PayoutRequestToLoad {
+  id String @id @default(uuid())
+  payoutRequestId String
+  loadId String
+
+  payoutRequest PayoutRequest @relation(fields: [payoutRequestId], references: [id])
+  load Load @relation(fields: [loadId], references: [id])
+  @@unique([payoutRequestId, loadId])
+}
+
+model Rating {
+  id String @id @default(uuid())
+  loadId String?
+  raterId String
+  rateeId String
+  score Int
+  issueReported Boolean @default(false)
+  issueNotes String?
+  severity String?
+  createdAt DateTime @default(now())
+
+  load Load? @relation(fields: [loadId], references: [id])
+  rater User @relation("raterToRatings", fields: [raterId], references: [id])
+  ratee User @relation("rateeToRatings", fields: [rateeId], references: [id])
+}
+
+model Advance {
+  id        String   @id @default(uuid())
+  loadId    String?
+  amountCents Int
+  fundedBy  String?
+  createdAt DateTime @default(now())
+  settledAt DateTime?
+  // relation back to Load
+  load Load? @relation(fields: [loadId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String?
+  actionType String
+  targetType String
+  targetId  String?
+  // payload stored as JSON string for SQLite dev
+  payload   String?
+  createdAt DateTime @default(now())
+}
+

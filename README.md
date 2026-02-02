@@ -1,5 +1,42 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## PayTread local dev: Prisma + SQLite
+
+This workspace includes a minimal Prisma setup (SQLite) for local development to test the immutable ledger and payouts flow.
+
+Quick start:
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Generate the Prisma client:
+
+```bash
+npm run prisma:generate
+```
+
+3. Create the SQLite database and run the dev migrate (optional) then seed sample data:
+
+```bash
+npm run prisma:migrate
+npm run seed
+```
+
+4. Run the app:
+
+```bash
+npm run dev
+```
+
+API endpoints for quick inspection:
+
+- GET /api/ledger — returns recent ledger rows (useful after running the seed script)
+
+If you switch to Postgres for production, update `DATABASE_URL` in your environment and run Prisma migrate accordingly.
+
 ## Getting Started
 
 First, run the development server:
