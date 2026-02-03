@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
 import getUserFromReq from '../../../../../lib/getUserFromReq';
 import { getRoleNameForUser } from '../../../../../lib/permissions';
+import type { Load } from '@prisma/client';
+
+type RouteContext = { params?: Record<string, unknown> | Promise<Record<string, unknown>> };
 
 // Broker/Admin can authorize payout for a load. This creates a PayoutRequest
 // and associates the load with it. It is idempotent per load.
-export async function POST(req: Request, context: any) {
+export async function POST(req: Request, context: RouteContext) {
   try {
     const user = await getUserFromReq(req);
     if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
@@ -15,12 +18,12 @@ export async function POST(req: Request, context: any) {
   // support loadId from URL param or fallback to request body/query (helps tests/proxies)
   let paramLoadId: string | undefined = undefined;
   if (context && context.params) {
-    const maybeParams = context.params as any;
-    const params = (maybeParams && typeof maybeParams.then === 'function') ? await maybeParams : maybeParams;
-    paramLoadId = params?.loadId;
+    const maybeParams = context.params;
+    const params = (maybeParams && typeof (maybeParams as Promise<Record<string, unknown>>).then === 'function') ? await (maybeParams as Promise<Record<string, unknown>>) : (maybeParams as Record<string, unknown> | undefined);
+    paramLoadId = params?.loadId as string | undefined;
   }
-  const body = await req.json().catch(() => ({} as any));
-  let loadId = paramLoadId ?? body.loadId ?? (new URL(req.url)).searchParams.get('loadId');
+  const body = await req.json().catch(() => ({} as Record<string, unknown>));
+  let loadId = paramLoadId ?? (body.loadId as string | undefined) ?? (new URL(req.url)).searchParams.get('loadId');
   // If the framework didn't populate params, try to extract from the pathname as a fallback
   if (!loadId) {
     try {
@@ -31,11 +34,11 @@ export async function POST(req: Request, context: any) {
   }
 
   // allow callers to pass either the DB id or the externalRef for convenience
-  let load = null as any;
+  let load: Load | null = null;
   if (loadId) {
-    load = await prisma.load.findUnique({ where: { id: loadId } }).catch(() => null as any);
+    try { load = await prisma.load.findUnique({ where: { id: loadId } }); } catch { load = null; }
     if (!load) {
-      load = await prisma.load.findUnique({ where: { externalRef: loadId } }).catch(() => null as any);
+      try { load = await prisma.load.findUnique({ where: { externalRef: loadId } }); } catch { load = null; }
     }
   }
     if (!load) return NextResponse.json({ error: 'load_not_found' }, { status: 404 });

@@ -18,8 +18,8 @@ export async function sendPayoutReceipt(payoutId: string) {
 
     // Build receipt
     // payout may be a loose typed object in this workspace; access fields defensively
-    const amountCents = (payout as any).amountCents ?? 0;
-    const feeCents = (payout as any).feeCents ?? 0;
+    const amountCents = (payout as unknown as { amountCents?: number })?.amountCents ?? 0;
+    const feeCents = (payout as unknown as { feeCents?: number })?.feeCents ?? 0;
     const receipt = {
       id: `receipt-${payout.id}`,
       payoutId: payout.id,
@@ -27,9 +27,9 @@ export async function sendPayoutReceipt(payoutId: string) {
       amountCents,
       feeCents,
       netCents: (amountCents - feeCents),
-      method: (payout as any).method ?? null,
-      processedAt: (payout as any).processedAt ?? new Date().toISOString(),
-      externalPaymentId: (payout as any).externalPaymentId ?? null,
+      method: (payout as unknown as { method?: string })?.method ?? null,
+      processedAt: ((payout as unknown as { processedAt?: Date | string })?.processedAt ?? new Date()).toString(),
+      externalPaymentId: (payout as unknown as { externalPaymentId?: string })?.externalPaymentId ?? null,
     };
 
     // Store receipt JSON in tmp for dev and create a notification for the requesting user
@@ -41,7 +41,7 @@ export async function sendPayoutReceipt(payoutId: string) {
     fs.writeFileSync(filePath, JSON.stringify(receipt, null, 2));
 
     // create in-app notification for whoever requested the payout
-    const targetUserId = payout.requestedBy ?? null;
+  const targetUserId = (payout as unknown as { requestedBy?: string | null })?.requestedBy ?? null;
     if (targetUserId) {
       await prisma.notification.create({ data: { forUserId: targetUserId, type: 'PAYOUT_RECEIPT', message: `Payout ${payout.id} sent`, link: `/receipts/${receipt.id}`, } });
     }

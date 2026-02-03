@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import prisma from '@/lib/prisma';
 import requireAdmin from '@/lib/adminAuth';
+import type { UserFlag } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,11 +23,11 @@ export async function GET(req: NextRequest) {
     if (rapidSmall > 10) flags.push('MULTIPLE_MEDIUM_TXS');
 
     // persist flags as UserFlag rows (avoid duplicates for identical type)
-    const existing = await (prisma as any).userFlag.findMany({ where: { userId } });
-    const toCreate = flags.filter((f: string) => !existing.find((e: any) => e.type === f));
-    const created: any[] = [];
+    const existing = await prisma.userFlag.findMany({ where: { userId } }) as UserFlag[];
+    const toCreate = flags.filter((f: string) => !existing.find((e) => e.type === f));
+    const created: UserFlag[] = [];
     for (const t of toCreate) {
-      const row = await (prisma as any).userFlag.create({ data: { userId, type: t, reason: 'automated_heuristic' } });
+      const row = await prisma.userFlag.create({ data: { userId, type: t, reason: 'automated_heuristic' } });
       created.push(row);
       await prisma.auditLog.create({ data: { actorId: null, actionType: 'AUTOMATED_FLAG_CREATE', targetType: 'UserFlag', targetId: row.id, payload: JSON.stringify({ userId, type: t }) } });
     }

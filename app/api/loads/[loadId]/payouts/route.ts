@@ -6,16 +6,19 @@ import { processPayoutSandbox } from "../../../../../lib/payments/sandbox";
 import { calculatePayoutFee } from '../../../../../lib/payments/fees';
 import worker from '../../../../../lib/worker/payments';
 import { logAccess } from '../../../../../lib/accessLog';
+import type { Prisma, Payout, WalletTransaction, Wallet } from '@prisma/client';
 
-export async function POST(req: Request, context: any) {
+type RouteContext = { params?: Record<string, unknown> | Promise<Record<string, unknown>> };
+
+export async function POST(req: Request, context: RouteContext) {
   try {
-    const body = await req.json().catch(() => ({} as any));
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
     // support loadId coming from the URL param or as a fallback in the request body (helps tests/proxies)
   let paramLoadId: string | undefined = undefined;
   if (context && context.params) {
-    const maybeParams = context.params as any;
-    const params = (maybeParams && typeof maybeParams.then === 'function') ? await maybeParams : maybeParams;
-    paramLoadId = params?.loadId;
+    const maybeParams = context.params;
+    const params = (maybeParams && typeof (maybeParams as any).then === 'function') ? await (maybeParams as Promise<Record<string, unknown>>) : (maybeParams as Record<string, unknown>);
+    paramLoadId = params?.loadId as string | undefined;
   }
     let loadId = paramLoadId ?? body.loadId;
     if (!loadId) {
@@ -37,7 +40,7 @@ export async function POST(req: Request, context: any) {
     const idempotencyKey: string | undefined = req.headers.get("Idempotency-Key") ?? body.idempotencyKey;
   // Resolve actor from request (dev helper reads x-user-email or ?email)
   const actor = await getUserFromReq(req);
-  const actorEmail = actor?.email ?? body.requestedBy ?? undefined;
+  const actorEmail = (actor as any)?.email ?? (body as Record<string, unknown>).requestedBy ?? undefined;
   const requestedBy = actorEmail ?? "system";
 
     if (!amountCents || amountCents <= 0) {
@@ -75,7 +78,7 @@ export async function POST(req: Request, context: any) {
     if (!actorEmail) {
       return NextResponse.json({ error: 'requesting_user_not_provided', message: 'No requesting user (provide x-user-email or requestedBy)' }, { status: 400 });
     }
-    const requestingUser = await prisma.user.findUnique({ where: { email: actorEmail } });
+      const requestingUser = await prisma.user.findUnique({ where: { email: actorEmail } });
     if (!requestingUser) {
       return NextResponse.json({ error: 'requesting_user_not_found', message: 'requestingBy must be a valid user email' }, { status: 400 });
     }
@@ -86,7 +89,7 @@ export async function POST(req: Request, context: any) {
       }
     // Prisma TS types in this workspace may not include kycStatus on the generated User type
     // so defensively read it via a runtime cast to avoid compile errors while still enforcing the check.
-    const requestingUserKyc = (requestingUser as any).kycStatus ?? 'UNVERIFIED';
+    const requestingUserKyc = (requestingUser as unknown && (requestingUser as { kycStatus?: string })?.kycStatus) ?? 'UNVERIFIED';
     if (requestingUserKyc !== 'VERIFIED') {
       return NextResponse.json({ error: 'kyc_required', message: 'KYC must be VERIFIED before requesting payouts' }, { status: 403 });
     }
@@ -94,8 +97,8 @@ export async function POST(req: Request, context: any) {
     // Role-based payer/payee rules:
     // - Carrier, Broker, Shipper, Receiver may act as payer or payee (i.e., may request payouts)
     // - Dispatcher may NOT request payouts (they can only be recipients/payees)
-    const requestingRole = (requestingUser as any).roleId ? await prisma.role.findUnique({ where: { id: requestingUser.roleId } }) : null;
-    const requestingRoleName = (requestingRole as any)?.name ?? null;
+  const requestingRole = (requestingUser as { roleId?: number })?.roleId ? await prisma.role.findUnique({ where: { id: (requestingUser as { roleId?: number }).roleId } }) : null;
+  const requestingRoleName = requestingRole?.name ?? null;
     if (requestingRoleName === 'DISPATCHER') {
       return NextResponse.json({ error: 'role_not_allowed', message: 'Dispatcher role is not allowed to request payouts (dispatcher may only be a payee)' }, { status: 403 });
     }
@@ -123,12 +126,12 @@ export async function POST(req: Request, context: any) {
     }
 
     // Perform an atomic debit: conditionally decrement wallet.balanceCents if sufficient
-    let createdPayout: any;
-    let createdTxn: any;
-    let walletAfter: any;
+    let createdPayout: Payout | null = null;
+    let createdTxn: WalletTransaction | null = null;
+    let walletAfter: Wallet | null = null;
 
     try {
-      const txResult = await prisma.$transaction(async (tx: any) => {
+  const txResult = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // conditional decrement to avoid races
         // Require sufficient funds for amount + fee
         const updateResult = await tx.wallet.updateMany({ where: { id: wallet.id, balanceCents: { gte: totalDebit } }, data: { balanceCents: { decrement: totalDebit } } });
@@ -136,13 +139,13 @@ export async function POST(req: Request, context: any) {
           throw new Error('INSUFFICIENT_FUNDS');
         }
 
-        const walletNow = await tx.wallet.findUnique({ where: { id: wallet.id } });
+  const walletNow = await tx.wallet.findUnique({ where: { id: wallet.id } });
+  if (!walletNow) throw new Error('WALLET_NOT_FOUND');
 
         const p = await tx.payout.create({ data: {
           loadId: load.id,
           idempotencyKey: idempotencyKey ?? undefined,
           amountCents: amountCents,
-          feeCents: feeCents,
           method,
           status: 'REQUESTED',
           requestedBy: requestingUser.id,
@@ -160,7 +163,7 @@ export async function POST(req: Request, context: any) {
         } });
 
         // if fee > 0 create separate fee txn
-        let feeTxn = null as any;
+  let feeTxn: unknown = null;
         if (feeCents > 0) {
           feeTxn = await tx.walletTransaction.create({ data: {
             walletId: wallet.id,
@@ -173,14 +176,14 @@ export async function POST(req: Request, context: any) {
           } });
         }
 
-        await tx.payout.update({ where: { id: p.id }, data: { walletTransactionId: payoutTxn.id } });
+  await tx.payout.update({ where: { id: p.id }, data: { walletTransactionId: payoutTxn.id } });
 
         return { p, payoutTxn, walletNow };
       });
 
-      createdPayout = txResult.p;
-      createdTxn = txResult.payoutTxn;
-      walletAfter = txResult.walletNow;
+      createdPayout = txResult.p as Payout;
+      createdTxn = txResult.payoutTxn as WalletTransaction;
+      walletAfter = txResult.walletNow as Wallet;
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'INSUFFICIENT_FUNDS') {
         return NextResponse.json({ error: 'insufficient_funds' }, { status: 400 });
@@ -188,7 +191,7 @@ export async function POST(req: Request, context: any) {
       throw e;
     }
 
-    const finalizedPayout = createdPayout;
+  const finalizedPayout = createdPayout as Payout;
 
     // Enqueue for async settlement (dev worker will POST to /api/webhooks/payments)
     await prisma.payout.update({ where: { id: finalizedPayout.id }, data: { status: 'PENDING' } });

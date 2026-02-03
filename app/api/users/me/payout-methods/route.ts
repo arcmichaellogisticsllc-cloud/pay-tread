@@ -8,11 +8,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     const actor = await getUserFromReq(req);
     if (!actor) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
-    const methods = await prisma.payoutMethod.findMany({
-      where: { ownerId: actor.id },
-      orderBy: { createdAt: 'desc' },
-    });
-
+  const methods = await prisma.payoutMethod.findMany({ where: { ownerId: actor.id }, orderBy: { createdAt: 'desc' } });
+    // access log for listing
+    await logAccess(actor.id, 'PAYOUT_METHOD_LIST', { count: methods.length }).catch(() => null);
     return NextResponse.json({ data: methods });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
@@ -25,21 +23,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const actor = await getUserFromReq(req);
     if (!actor) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
 
-  const body = (await req.json().catch(() => ({}))) as { type?: string; details?: any; last4?: string };
-  const { type, details, last4 } = body;
+    const body = (await req.json().catch(() => ({}))) as { type?: string; details?: Record<string, unknown> | string | undefined; last4?: string };
+    const { type, details, last4 } = body;
     if (!type) return NextResponse.json({ error: 'missing_type' }, { status: 400 });
 
     // Sanitize sensitive fields (don't store raw PAN/CVV in dev DB)
     let detailsToStore: string | undefined = undefined;
-    if (details && typeof details === 'object') {
-      const copy = { ...details };
-      // remove commonly sensitive fields
-      for (const k of Object.keys(copy)) {
-        if (/card|pan|cvv|cvc|security_code|number|expiry|exp|ssn/i.test(k)) {
-          delete copy[k];
+    if (details && typeof details === 'object' && !Array.isArray(details)) {
+      const input = details as Record<string, unknown>;
+      const sanitized: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(input)) {
+        if (!/card|pan|cvv|cvc|security_code|number|expiry|exp|ssn/i.test(k)) {
+          sanitized[k] = v;
         }
       }
-      detailsToStore = JSON.stringify(copy);
+      detailsToStore = JSON.stringify(sanitized);
     } else if (details) {
       detailsToStore = String(details);
     }
@@ -56,3 +54,5 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'failed', message }, { status: 500 });
   }
 }
+
+// helper: run `gh` CLI locally if needed to inspect workflows

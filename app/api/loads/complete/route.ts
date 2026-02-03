@@ -5,8 +5,8 @@ import { approvePodCanonical } from '../../../../lib/pod/approve';
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({} as any));
-    const loadId = body.loadId;
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const loadId = body.loadId as string | undefined;
     if (!loadId) return NextResponse.json({ error: 'missing_load' }, { status: 400 });
 
     const user = await getUserFromReq(req);
@@ -25,7 +25,10 @@ export async function POST(req: Request) {
     const carrier = await prisma.user.findUnique({ where: { id: user.id } });
     if (!carrier) return NextResponse.json({ error: 'carrier_not_found' }, { status: 404 });
 
-    if (((carrier as any).kycStatus || 'UNVERIFIED') === 'VERIFIED') {
+    // If carrier has a persisted verification flag, allow instant payout
+    const kycFlag = await prisma.userFlag.findFirst({ where: { userId: carrier.id, type: 'KYC_VERIFIED' } }).catch(() => null as any);
+    const isVerified = !!kycFlag;
+    if (isVerified) {
       const wallet = await prisma.wallet.findFirst({ where: { ownerId: carrier.id } });
       if (wallet) {
         const already = await prisma.payout.findFirst({ where: { loadId: load.id } });
@@ -39,8 +42,8 @@ export async function POST(req: Request) {
     }
 
     await prisma.load.update({ where: { id: load.id }, data: { status: 'DELIVERED', deliveredAt: new Date() } });
-    await prisma.notification.create({ data: { forUserId: (load as any).shipperId as string, message: `Load ${load.externalRef ?? load.id} completed by carrier`, link: `/loads/${load.id}` } }).catch(()=>null);
-    await prisma.notification.create({ data: { forUserId: (load as any).receiverId as string, message: `Load ${load.externalRef ?? load.id} completed and delivered`, link: `/loads/${load.id}` } }).catch(()=>null);
+    await prisma.notification.create({ data: { forUserId: String(load.shipperId), message: `Load ${load.externalRef ?? load.id} completed by carrier`, link: `/loads/${load.id}` } }).catch(()=>null);
+    await prisma.notification.create({ data: { forUserId: String((load as any).receiverId), message: `Load ${load.externalRef ?? load.id} completed and delivered`, link: `/loads/${load.id}` } }).catch(()=>null);
 
     return NextResponse.json({ data: { approved: approveRes, message: 'Load completed and payout processed (if KYC VERIFIED)' } });
   } catch (err: unknown) {

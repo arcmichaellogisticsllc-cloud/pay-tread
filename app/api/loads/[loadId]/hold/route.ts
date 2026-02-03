@@ -3,15 +3,19 @@ import prisma from '../../../../../lib/prisma';
 import getUserFromReq from '../../../../../lib/getUserFromReq';
 import { getRoleNameForUser } from '../../../../../lib/permissions';
 
-export async function POST(req: Request, context: any) {
+type RouteContext = { params?: Record<string, unknown> };
+
+export async function POST(req: Request, context: RouteContext) {
   try {
-    const { loadId } = (context && (context.params ?? {})) as any;
-    if (!loadId) return NextResponse.json({ error: 'missing_load' }, { status: 400 });
+  const { loadId } = (context && (context.params ?? {})) as Record<string, unknown>;
+  const loadIdStr = typeof loadId === 'string' ? loadId : undefined;
+  if (!loadIdStr) return NextResponse.json({ error: 'missing_load' }, { status: 400 });
 
-    const body = await req.json().catch(() => ({} as any));
-    const amountCents: number = typeof body.amountCents === 'number' ? body.amountCents : undefined as any;
+    const body = await req.json().catch(() => ({} as Record<string, unknown>));
+    const amountRaw = (body as Record<string, unknown>).amountCents;
+    const amountCents: number | undefined = typeof amountRaw === 'number' ? amountRaw : undefined;
 
-    const load = await prisma.load.findUnique({ where: { id: loadId } });
+  const load = await prisma.load.findUnique({ where: { id: loadIdStr } });
     if (!load) return NextResponse.json({ error: 'load_not_found' }, { status: 404 });
 
   const amount = amountCents ?? load.grossAmount;
@@ -25,12 +29,12 @@ export async function POST(req: Request, context: any) {
     }
 
     // resolve actor (dev helper: x-user-email or ?email)
-    const user = await getUserFromReq(req);
-    if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
-    const actorId = user.id;
+  const user = await getUserFromReq(req);
+  if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+  const actorId = user.id;
 
     // only shipper, broker, or admin may create a hold on shipper funds
-    const roleName = await getRoleNameForUser(user);
+    const roleName = await getRoleNameForUser(user as unknown as { id?: string; roleId?: number; role?: { name?: string } });
     if (!(user.id === load.shipperId || user.id === load.brokerId || roleName === 'ADMIN')) {
       return NextResponse.json({ error: 'forbidden', message: 'only shipper, broker, or admin may create holds' }, { status: 403 });
     }
@@ -57,7 +61,7 @@ export async function POST(req: Request, context: any) {
     } });
 
     // audit
-    await prisma.auditLog.create({ data: { actorId: actorId, actionType: 'HOLD_CREATE', targetType: 'Load', targetId: loadId, payload: JSON.stringify({ amount }), } });
+  await prisma.auditLog.create({ data: { actorId: actorId, actionType: 'HOLD_CREATE', targetType: 'Load', targetId: loadIdStr, payload: JSON.stringify({ amount }), } });
 
     return NextResponse.json({ data: { walletId: wallet.id, holdTx: wtx } }, { status: 201 });
   } catch (err: unknown) {

@@ -3,11 +3,13 @@ import prisma from '../../../../../lib/prisma';
 import getUserFromReq from '../../../../../lib/getUserFromReq';
 import { approvePodCanonical } from '../../../../../lib/pod/approve';
 
-export async function POST(req: Request, context: any) {
+type RouteContext = { params?: Record<string, unknown> };
+
+export async function POST(req: Request, context: RouteContext) {
   try {
-  const body = await req.json().catch(() => ({} as any));
-  const { loadId: paramLoadId } = (context && (context.params ?? {})) as any;
-  const loadId = paramLoadId ?? body.loadId;
+  const body = await req.json().catch(() => ({} as Record<string, unknown>));
+  const { loadId: paramLoadId } = (context && (context.params ?? {})) as Record<string, unknown>;
+  const loadId = (paramLoadId as string | undefined) ?? (body as Record<string, unknown>).loadId as string | undefined;
   if (!loadId) return NextResponse.json({ error: 'missing_load' }, { status: 400 });
 
   const user = await getUserFromReq(req);
@@ -30,7 +32,7 @@ export async function POST(req: Request, context: any) {
     const carrier = await prisma.user.findUnique({ where: { id: user.id } });
     if (!carrier) return NextResponse.json({ error: 'carrier_not_found' }, { status: 404 });
 
-  if (((carrier as any).kycStatus || 'UNVERIFIED') === 'VERIFIED') {
+  if (((carrier as { kycStatus?: string })?.kycStatus || 'UNVERIFIED') === 'VERIFIED') {
       // find carrier wallet
       const wallet = await prisma.wallet.findFirst({ where: { ownerId: carrier.id } });
       if (!wallet) return NextResponse.json({ error: 'wallet_not_found' }, { status: 400 });
@@ -76,8 +78,9 @@ export async function POST(req: Request, context: any) {
     await prisma.load.update({ where: { id: load.id }, data: { status: 'DELIVERED', deliveredAt: new Date() } });
 
     // notify shipper and receiver
-  await prisma.notification.create({ data: { forUserId: (load as any).shipperId as string, message: `Load ${load.externalRef ?? load.id} completed by carrier`, link: `/loads/${load.id}` } }).catch(()=>null);
-  await prisma.notification.create({ data: { forUserId: (load as any).receiverId as string, message: `Load ${load.externalRef ?? load.id} completed and delivered`, link: `/loads/${load.id}` } }).catch(()=>null);
+  const l = load as unknown as { shipperId?: string; receiverId?: string; externalRef?: string; id: string };
+  await prisma.notification.create({ data: { forUserId: l.shipperId as string, message: `Load ${l.externalRef ?? l.id} completed by carrier`, link: `/loads/${l.id}` } }).catch(()=>null);
+  await prisma.notification.create({ data: { forUserId: l.receiverId as string, message: `Load ${l.externalRef ?? l.id} completed and delivered`, link: `/loads/${l.id}` } }).catch(()=>null);
 
     return NextResponse.json({ data: { approved: approveRes, message: 'Load completed and payout processed (if KYC VERIFIED)' } });
   } catch (err: unknown) {

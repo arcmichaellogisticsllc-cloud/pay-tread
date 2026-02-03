@@ -8,9 +8,8 @@ const eslintConfig = defineConfig([
   // Project-specific rule overrides: relax strictness during active development.
   {
     rules: {
-      // Many files still use `any` as a pragmatic shortcut while iterating.
-      // Turn this off for now to unblock CI; we can gradually re-enable and fix types.
-      '@typescript-eslint/no-explicit-any': 'off',
+      // Re-enable explicit-any rule to start converting files off `any`.
+      '@typescript-eslint/no-explicit-any': 'error',
       // Allow CommonJS `require()` in scripts and seed files used during development.
       '@typescript-eslint/no-require-imports': 'off',
     },
