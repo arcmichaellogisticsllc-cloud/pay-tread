@@ -11,11 +11,11 @@ export async function POST(req: Request) {
     const text = await req.text();
     if (!text) return NextResponse.json({ error: 'empty_body' }, { status: 400 });
 
-    const rows = text.split('\n').map(r=>r.trim()).filter(Boolean);
-    const created: any[] = [];
-    const skipped: any[] = [];
+    const rows = text.split('\n').map(r => r.trim()).filter(Boolean);
+    const created: Array<Record<string, unknown>> = [];
+    const skipped: Array<Record<string, unknown>> = [];
     for (const row of rows) {
-      const parts = row.split(',').map(p=>p.trim());
+      const parts = row.split(',').map((p) => p.trim());
       const [reference, shipperEmail, receiverEmail, carrierEmail, grossStr] = parts;
       const grossAmount = Number(grossStr || '0');
       if (!reference || !shipperEmail || !grossAmount) continue;
@@ -29,13 +29,13 @@ export async function POST(req: Request) {
       const receiver = receiverEmail ? await prisma.user.findUnique({ where: { email: receiverEmail } }) : null;
       const carrier = carrierEmail ? await prisma.user.findUnique({ where: { email: carrierEmail } }) : null;
 
-      const createData: any = { externalRef: reference, reference, grossAmount, currency: 'USD', status: 'CREATED' };
-      if (shipper) createData.shipper = { connect: { id: shipper.id } };
-      if (receiver) createData.receiver = { connect: { id: receiver.id } };
-      if (carrier) createData.assignedCarrier = { connect: { id: carrier.id } };
+      const createData: Record<string, unknown> = { externalRef: reference, reference, grossAmount, currency: 'USD', status: 'CREATED' };
+      if (shipper) (createData as any).shipper = { connect: { id: shipper.id } };
+      if (receiver) (createData as any).receiver = { connect: { id: receiver.id } };
+      if (carrier) (createData as any).assignedCarrier = { connect: { id: carrier.id } };
 
-      const load = await prisma.load.create({ data: createData });
-      created.push(load);
+      const load = await prisma.load.create({ data: createData as any });
+      created.push(load as Record<string, unknown>);
       await prisma.auditLog.create({ data: { actorId: user.id, actionType: 'LOAD_IMPORT', targetType: 'Load', targetId: load.id, payload: JSON.stringify({ reference, grossAmount }) } }).catch(()=>null);
     }
 

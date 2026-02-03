@@ -14,13 +14,13 @@ export async function POST(req: Request, context: RouteContext) {
   try {
     const body = await req.json().catch(() => ({} as Record<string, unknown>));
     // support loadId coming from the URL param or as a fallback in the request body (helps tests/proxies)
-  let paramLoadId: string | undefined = undefined;
-  if (context && context.params) {
-    const maybeParams = context.params;
-    const params = (maybeParams && typeof (maybeParams as any).then === 'function') ? await (maybeParams as Promise<Record<string, unknown>>) : (maybeParams as Record<string, unknown>);
-    paramLoadId = params?.loadId as string | undefined;
-  }
-    let loadId = paramLoadId ?? body.loadId;
+    let paramLoadId: string | undefined = undefined;
+    if (context && context.params) {
+      const maybeParams = context.params;
+      const params = (maybeParams && typeof (maybeParams as Promise<Record<string, unknown>>).then === 'function') ? await (maybeParams as Promise<Record<string, unknown>>) : (maybeParams as Record<string, unknown> | undefined);
+      paramLoadId = params?.loadId as string | undefined;
+    }
+    let loadId = paramLoadId ?? (body.loadId as string | undefined);
     if (!loadId) {
       try {
         const path = new URL(req.url).pathname;
@@ -35,13 +35,13 @@ export async function POST(req: Request, context: RouteContext) {
         { status: 400 }
       );
     }
-    const amountCents: number = body.amountCents;
-    const method: string = body.method ?? "instant_rtp";
-    const idempotencyKey: string | undefined = req.headers.get("Idempotency-Key") ?? body.idempotencyKey;
+  const amountCents = Number((body as Record<string, unknown>).amountCents);
+  const method: string = (body.method as string) ?? 'instant_rtp';
+  const idempotencyKey: string | undefined = req.headers.get('Idempotency-Key') ?? (body.idempotencyKey as string | undefined);
   // Resolve actor from request (dev helper reads x-user-email or ?email)
   const actor = await getUserFromReq(req);
-  const actorEmail = (actor as any)?.email ?? (body as Record<string, unknown>).requestedBy ?? undefined;
-  const requestedBy = actorEmail ?? "system";
+  const actorEmail = (actor as { email?: string } | null)?.email ?? (body.requestedBy as string | undefined) ?? undefined;
+  const requestedBy = actorEmail ?? 'system';
 
     if (!amountCents || amountCents <= 0) {
       return NextResponse.json({ error: "amountCents must be > 0" }, { status: 400 });
@@ -78,7 +78,7 @@ export async function POST(req: Request, context: RouteContext) {
     if (!actorEmail) {
       return NextResponse.json({ error: 'requesting_user_not_provided', message: 'No requesting user (provide x-user-email or requestedBy)' }, { status: 400 });
     }
-      const requestingUser = await prisma.user.findUnique({ where: { email: actorEmail } });
+    const requestingUser = await prisma.user.findUnique({ where: { email: actorEmail } });
     if (!requestingUser) {
       return NextResponse.json({ error: 'requesting_user_not_found', message: 'requestingBy must be a valid user email' }, { status: 400 });
     }
@@ -215,14 +215,14 @@ export async function POST(req: Request, context: RouteContext) {
   }
 }
 
-export async function GET(req: Request, context: any) {
+export async function GET(req: Request, context: RouteContext) {
   try {
     // support loadId from URL param or fallback to query (helps dev/test callers)
     let paramLoadId: string | undefined = undefined;
     if (context && context.params) {
-      const maybeParams = context.params as any;
-      const params = (maybeParams && typeof maybeParams.then === 'function') ? await maybeParams : maybeParams;
-      paramLoadId = params?.loadId;
+      const maybeParams = context.params;
+      const params = (maybeParams && typeof (maybeParams as Promise<Record<string, unknown>>).then === 'function') ? await (maybeParams as Promise<Record<string, unknown>>) : (maybeParams as Record<string, unknown> | undefined);
+      paramLoadId = params?.loadId as string | undefined;
     }
     const queryLoadId = new URL(req.url).searchParams.get('loadId');
     let loadId = paramLoadId ?? queryLoadId;

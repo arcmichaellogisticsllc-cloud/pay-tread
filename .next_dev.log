@@ -2111,3 +2111,6 @@
  GET /api/users/me 200 in 31ms (compile: 7ms, render: 25ms)
  GET /api/wallets/me 200 in 29ms (compile: 15ms, render: 14ms)
  GET /api/users/me/notifications 200 in 37ms (compile: 26ms, render: 11ms)
+ GET / 200 in 660ms (compile: 311ms, render: 349ms)
+ GET /api/users/me 200 in 18ms (compile: 4ms, render: 14ms)
+ GET /api/users/me/notifications 200 in 11ms (compile: 2ms, render: 9ms)
