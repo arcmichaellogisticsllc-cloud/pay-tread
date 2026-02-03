@@ -2,60 +2,84 @@ name: tests
 
 on:
   push:
-    branches: [ main, feature/** ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
   ci:
     runs-on: ubuntu-latest
 
-    # Make Laravel use a throwaway sqlite DB and in-memory drivers
     env:
       APP_ENV: testing
-      APP_KEY: base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+      # Do NOT hardcode APP_KEY here; we will generate it below so encryption works.
       CACHE_DRIVER: array
       QUEUE_CONNECTION: sync
       SESSION_DRIVER: array
       LOG_CHANNEL: stack
       DB_CONNECTION: sqlite
-      DB_DATABASE: database/database.sqlite
+      # Use a simple, repo-relative sqlite file
+      DB_DATABASE: ${{ github.workspace }}/database/database.sqlite
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Prepare environment
-        run: |
-          cp .env.example .env
-          php -r "file_exists('database') || mkdir('database');"
-          php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           tools: composer:v2
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.composer/cache/files
+            vendor
+          key: composer-${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-
 
       - name: Install PHP dependencies
         run: composer install --no-interaction --prefer-dist --no-progress
 
+      - name: Prepare environment
+        run: |
+          cp .env.example .env || true
+          php artisan key:generate --force
+          mkdir -p database
+          touch "$DB_DATABASE"
+          chmod 666 "$DB_DATABASE" || true
+          php -v
+          php artisan --version
+
+      - name: Run migrations (sqlite)
+        run: php artisan migrate --no-interaction -v
+
+      - name: Debug routes (optional)
+        run: php artisan route:list || true
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install Node deps
-        run: npm ci --no-audit --no-fund || npm i --no-audit --no-fund
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm i; fi
 
       - name: Build (optional)
         run: npm run build --if-present
 
-      - name: Generate app key
-        run: php artisan key:generate
+      - name: PHP Unit tests (prefer Pest output)
+        run: |
+          if [ -f vendor/bin/pest ]; then
+            vendor/bin/pest --colors=always --stop-on-failure
+          else
+            # Fallback with verbose output (no -q)
+            php artisan test -v --stop-on-failure
+          fi
 
-      - name: Run migrations (sqlite)
-        run: php artisan migrate --force
-
-      - name: PHP Unit tests
-        run: php artisan test -q

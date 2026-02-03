@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
 /**
-* @see \App\Http\Controllers\Auth\RegisteredUserController::store
-* @see app/Http/Controllers/Auth/RegisteredUserController.php:31
+* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
+* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 export const store = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({
@@ -15,8 +15,8 @@ store.definition = {
 } satisfies RouteDefinition<["post"]>
 
 /**
-* @see \App\Http\Controllers\Auth\RegisteredUserController::store
-* @see app/Http/Controllers/Auth/RegisteredUserController.php:31
+* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
+* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 store.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ store.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \App\Http\Controllers\Auth\RegisteredUserController::store
-* @see app/Http/Controllers/Auth/RegisteredUserController.php:31
+* @see \Laravel\Fortify\Http\Controllers\RegisteredUserController::store
+* @see vendor/laravel/fortify/src/Http/Controllers/RegisteredUserController.php:53
 * @route '/register'
 */
 store.post = (options?: RouteQueryOptions): RouteDefinition<'post'> => ({

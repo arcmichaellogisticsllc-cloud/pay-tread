@@ -1,92 +1,75 @@
 <script setup lang="ts">
-import NewPasswordController from '@/actions/App/Http/Controllers/Auth/NewPasswordController';
-import InputError from '@/components/InputError.vue';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/AuthLayout.vue';
-import { Form, Head } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { Head, useForm, usePage } from '@inertiajs/vue3'
 
-const props = defineProps<{
-    token: string;
-    email: string;
-}>();
+// Grab only what we need without fighting your app-wide PageProps typing
+const page = usePage()
+const initial = (page.props || {}) as Record<string, unknown>
 
-const inputEmail = ref(props.email);
+const form = useForm({
+  token: String(initial.token ?? ''),
+  email: String(initial.email ?? ''),
+  password: '',
+  password_confirmation: '',
+})
+
+function submit() {
+  // You already have: Route::post('/reset-password')->name('password.store')
+  form.post('/reset-password') // or route('password.store') if Ziggy is available
+}
 </script>
 
 <template>
-    <AuthLayout
-        title="Reset password"
-        description="Please enter your new password below"
-    >
-        <Head title="Reset password" />
+  <div class="mx-auto max-w-md">
+    <Head title="Reset Password" />
 
-        <Form
-            v-bind="NewPasswordController.store.form()"
-            :transform="(data) => ({ ...data, token, email })"
-            :reset-on-success="['password', 'password_confirmation']"
-            v-slot="{ errors, processing }"
-        >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        autocomplete="email"
-                        v-model="inputEmail"
-                        class="mt-1 block w-full"
-                        readonly
-                    />
-                    <InputError :message="errors.email" class="mt-2" />
-                </div>
+    <h1 class="mb-4 text-2xl font-semibold">Reset Password</h1>
 
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        autocomplete="new-password"
-                        class="mt-1 block w-full"
-                        autofocus
-                        placeholder="Password"
-                    />
-                    <InputError :message="errors.password" />
-                </div>
+    <form @submit.prevent="submit" class="space-y-4">
+      <input
+        v-model="form.email"
+        type="email"
+        name="email"
+        autocomplete="email"
+        required
+        placeholder="Email"
+        class="w-full rounded border p-2"
+      />
 
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">
-                        Confirm Password
-                    </Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        autocomplete="new-password"
-                        class="mt-1 block w-full"
-                        placeholder="Confirm password"
-                    />
-                    <InputError :message="errors.password_confirmation" />
-                </div>
+      <input
+        v-model="form.password"
+        type="password"
+        name="password"
+        autocomplete="new-password"
+        required
+        placeholder="New password"
+        class="w-full rounded border p-2"
+      />
 
-                <Button
-                    type="submit"
-                    class="mt-4 w-full"
-                    :disabled="processing"
-                    data-test="reset-password-button"
-                >
-                    <LoaderCircle
-                        v-if="processing"
-                        class="h-4 w-4 animate-spin"
-                    />
-                    Reset password
-                </Button>
-            </div>
-        </Form>
-    </AuthLayout>
+      <input
+        v-model="form.password_confirmation"
+        type="password"
+        name="password_confirmation"
+        autocomplete="new-password"
+        required
+        placeholder="Confirm new password"
+        class="w-full rounded border p-2"
+      />
+
+      <!-- hidden token field -->
+      <input v-model="form.token" type="hidden" name="token" />
+
+      <button
+        type="submit"
+        :disabled="form.processing"
+        class="w-full rounded bg-black px-4 py-2 font-medium text-white disabled:opacity-50"
+      >
+        Reset password
+      </button>
+
+      <div v-if="form.errors.email" class="text-sm text-red-600">{{ form.errors.email }}</div>
+      <div v-if="form.errors.password" class="text-sm text-red-600">{{ form.errors.password }}</div>
+      <div v-if="form.errors.token" class="text-sm text-red-600">{{ form.errors.token }}</div>
+      <div v-if="form.recentlySuccessful" class="text-sm text-green-600">Password reset successful.</div>
+    </form>
+  </div>
 </template>

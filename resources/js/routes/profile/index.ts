@@ -1,30 +1,120 @@
-// resources/js/routes/profile.ts
-import { queryParams, type RouteQueryOptions, type RouteDefinition } from '../wayfinder'
-
-/** GET /profile */
-export const edit = (o?: RouteQueryOptions): RouteDefinition<'get'> => ({
-  url: edit.url(o),
-  method: 'get',
+import { queryParams, type RouteQueryOptions, type RouteDefinition } from './../../wayfinder'
+/**
+* @see \App\Http\Controllers\ProfileController::edit
+* @see app/Http/Controllers/ProfileController.php:10
+* @route '/profile'
+*/
+export const edit = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(options),
+    method: 'get',
 })
-edit.definition = { methods: ['get', 'head'], url: '/profile' } as const
-edit.url  = (o?: RouteQueryOptions) => edit.definition.url + queryParams(o)
-edit.get  = (o?: RouteQueryOptions): RouteDefinition<'get'>  => ({ url: edit.url(o),  method: 'get'  })
-edit.head = (o?: RouteQueryOptions): RouteDefinition<'head'> => ({ url: edit.url(o),  method: 'head' })
 
-/** PATCH /profile */
-export const update = (o?: RouteQueryOptions): RouteDefinition<'patch'> => ({
-  url: update.url(o),
-  method: 'patch',
-})
-update.definition = { methods: ['patch'], url: '/profile' } as const
-update.url = (o?: RouteQueryOptions) => update.definition.url + queryParams(o)
-update.patch = (o?: RouteQueryOptions): RouteDefinition<'patch'> => ({ url: update.url(o), method: 'patch' })
+edit.definition = {
+    methods: ["get","head"],
+    url: '/profile',
+} satisfies RouteDefinition<["get","head"]>
 
-/** DELETE /profile */
-export const destroy = (o?: RouteQueryOptions): RouteDefinition<'delete'> => ({
-  url: destroy.url(o),
-  method: 'delete',
+/**
+* @see \App\Http\Controllers\ProfileController::edit
+* @see app/Http/Controllers/ProfileController.php:10
+* @route '/profile'
+*/
+edit.url = (options?: RouteQueryOptions) => {
+    return edit.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ProfileController::edit
+* @see app/Http/Controllers/ProfileController.php:10
+* @route '/profile'
+*/
+edit.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: edit.url(options),
+    method: 'get',
 })
-destroy.definition = { methods: ['delete'], url: '/profile' } as const
-destroy.url   = (o?: RouteQueryOptions) => destroy.definition.url + queryParams(o)
-destroy.delete = (o?: RouteQueryOptions): RouteDefinition<'delete'> => ({ url: destroy.url(o), method: 'delete' })
+
+/**
+* @see \App\Http\Controllers\ProfileController::edit
+* @see app/Http/Controllers/ProfileController.php:10
+* @route '/profile'
+*/
+edit.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: edit.url(options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::update
+* @see app/Http/Controllers/ProfileController.php:16
+* @route '/profile'
+*/
+export const update = (options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: update.url(options),
+    method: 'patch',
+})
+
+update.definition = {
+    methods: ["patch"],
+    url: '/profile',
+} satisfies RouteDefinition<["patch"]>
+
+/**
+* @see \App\Http\Controllers\ProfileController::update
+* @see app/Http/Controllers/ProfileController.php:16
+* @route '/profile'
+*/
+update.url = (options?: RouteQueryOptions) => {
+    return update.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ProfileController::update
+* @see app/Http/Controllers/ProfileController.php:16
+* @route '/profile'
+*/
+update.patch = (options?: RouteQueryOptions): RouteDefinition<'patch'> => ({
+    url: update.url(options),
+    method: 'patch',
+})
+
+/**
+* @see \App\Http\Controllers\ProfileController::destroy
+* @see app/Http/Controllers/ProfileController.php:24
+* @route '/profile'
+*/
+export const destroy = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy.url(options),
+    method: 'delete',
+})
+
+destroy.definition = {
+    methods: ["delete"],
+    url: '/profile',
+} satisfies RouteDefinition<["delete"]>
+
+/**
+* @see \App\Http\Controllers\ProfileController::destroy
+* @see app/Http/Controllers/ProfileController.php:24
+* @route '/profile'
+*/
+destroy.url = (options?: RouteQueryOptions) => {
+    return destroy.definition.url + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\ProfileController::destroy
+* @see app/Http/Controllers/ProfileController.php:24
+* @route '/profile'
+*/
+destroy.delete = (options?: RouteQueryOptions): RouteDefinition<'delete'> => ({
+    url: destroy.url(options),
+    method: 'delete',
+})
+
+const profile = {
+    edit: Object.assign(edit, edit),
+    update: Object.assign(update, update),
+    destroy: Object.assign(destroy, destroy),
+}
+
+export default profile

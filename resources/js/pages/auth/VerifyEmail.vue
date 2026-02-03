@@ -1,49 +1,37 @@
 <script setup lang="ts">
-import EmailVerificationNotificationController from '@/actions/App/Http/Controllers/Auth/EmailVerificationNotificationController';
-import TextLink from '@/components/TextLink.vue';
-import { Button } from '@/components/ui/button';
-import AuthLayout from '@/layouts/AuthLayout.vue';
-import { logout } from '@/routes';
-import { Form, Head } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { Head, useForm } from '@inertiajs/vue3'
 
-defineProps<{
-    status?: string;
-}>();
+const form = useForm({})
+
+function resend() {
+  // You have Route::post('/email/verification-notification')->name('verification.send')
+  form.post('/email/verification-notification')
+}
 </script>
 
 <template>
-    <AuthLayout
-        title="Verify email"
-        description="Please verify your email address by clicking on the link we just emailed to you."
-    >
-        <Head title="Email verification" />
+  <div class="mx-auto max-w-md">
+    <Head title="Verify Email" />
+    <h1 class="mb-3 text-2xl font-semibold">Verify your email</h1>
 
-        <div
-            v-if="status === 'verification-link-sent'"
-            class="mb-4 text-center text-sm font-medium text-green-600"
-        >
-            A new verification link has been sent to the email address you
-            provided during registration.
-        </div>
+    <p class="mb-6 text-sm text-muted-foreground">
+      Thanks for signing up! Before getting started, please verify your email address by
+      clicking on the link we just emailed to you. If you didn't receive the email, we can
+      send another.
+    </p>
 
-        <Form
-            v-bind="EmailVerificationNotificationController.store.form()"
-            class="space-y-6 text-center"
-            v-slot="{ processing }"
-        >
-            <Button :disabled="processing" variant="secondary">
-                <LoaderCircle v-if="processing" class="h-4 w-4 animate-spin" />
-                Resend verification email
-            </Button>
+    <form @submit.prevent="resend" class="space-y-3">
+      <button
+        type="submit"
+        :disabled="form.processing"
+        class="w-full rounded bg-black px-4 py-2 font-medium text-white disabled:opacity-50"
+      >
+        Resend verification email
+      </button>
+    </form>
 
-            <TextLink
-                :href="logout()"
-                as="button"
-                class="mx-auto block text-sm"
-            >
-                Log out
-            </TextLink>
-        </Form>
-    </AuthLayout>
+    <p v-if="form.recentlySuccessful" class="mt-3 text-sm text-green-600">
+      A new verification link has been sent to your email address.
+    </p>
+  </div>
 </template>
