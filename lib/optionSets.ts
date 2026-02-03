@@ -62,6 +62,14 @@ export const IssueSeverityMeta: Record<IssueSeverity, { label: string; order: nu
   CRITICAL: { label: 'Critical', order: 4, color: '#7C3AED' }
 };
 
+export const CarrierType = ['FLEET', 'OWNER_OPERATOR'] as const;
+export type CarrierType = (typeof CarrierType)[number];
+export const isCarrierType = (v: unknown): v is CarrierType => typeof v === 'string' && (CarrierType as readonly string[]).includes(v as string);
+export const CarrierTypeMeta: Record<CarrierType, { label: string; order: number; color: string }> = {
+  FLEET: { label: 'Fleet', order: 1, color: '#60A5FA' },
+  OWNER_OPERATOR: { label: 'Owner-Operator', order: 2, color: '#34D399' }
+};
+
 // Helper to list choices for form selects
 // Returns ordered option objects with metadata when available
 export const optionList = <T extends readonly string[]>(arr: T, meta?: Record<string, { label?: string; order?: number; color?: string }>) => {

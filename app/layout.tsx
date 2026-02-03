@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "./components/ToastProvider";
+import { ConfirmProvider } from "./components/ConfirmProvider";
+import NotificationBell from './components/NotificationBell';
+import AppNav from './components/AppNav';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +31,22 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+        <ConfirmProvider>
+          <ToastProvider>
+          <header style={{borderBottom: '1px solid #e6e6e6', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 16, justifyContent: 'space-between'}}>
+            <div style={{display: 'flex', alignItems: 'center', gap: 16}}>
+              <div style={{fontWeight: 700}}>PayTread</div>
+              {/* AppNav is a client component that checks the current user's role and shows role-specific links */}
+              {/* ...existing code... */}
+              <AppNav />
+            </div>
+            <div style={{display: 'flex', alignItems: 'center', gap: 12}}>
+              <NotificationBell />
+            </div>
+          </header>
+          <main style={{padding: 20}}>{children}</main>
+          </ToastProvider>
+        </ConfirmProvider>
       </body>
     </html>
   );

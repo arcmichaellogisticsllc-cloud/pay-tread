@@ -1,4 +1,5 @@
 import { setTimeout as wait } from 'timers/promises';
+import prisma from '@/lib/prisma';
 
 // Simple in-memory payout worker for dev. Enqueue payouts for async settlement.
 const queue: string[] = [];
@@ -18,6 +19,20 @@ async function runWorker() {
     await wait(delayMs);
 
     try {
+      // Check payout status before sending webhook. If an admin froze it, re-enqueue and wait.
+      const p = await prisma.payout.findUnique({ where: { id: payoutId } });
+      if (!p) {
+        console.warn('worker: payout not found', payoutId);
+        continue;
+      }
+      if (p.status === 'FROZEN') {
+        console.log('worker: payout is FROZEN, deferring webhook delivery for', payoutId);
+        // requeue for later attempt
+        queue.push(payoutId);
+        await wait(5000);
+        continue;
+      }
+
       // POST a webhook to the local app to simulate settlement callback
       const base = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000';
       // randomly succeed or fail (90% success)

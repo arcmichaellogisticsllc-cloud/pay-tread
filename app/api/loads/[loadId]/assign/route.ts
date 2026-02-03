@@ -2,9 +2,9 @@ import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
 import getUserFromReq from '../../../../../lib/getUserFromReq';
 
-export async function POST(req: Request, { params }: { params: { loadId: string } }) {
+export async function POST(req: Request, context: any) {
   try {
-    const { loadId } = params;
+    const { loadId } = (context && (context.params ?? {})) as any;
     const body = await req.json().catch(() => ({} as any));
     const { carrierEmail } = body;
     if (!loadId) return NextResponse.json({ error: 'missing_load' }, { status: 400 });

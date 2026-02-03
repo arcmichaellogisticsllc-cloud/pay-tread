@@ -1,0 +1,2 @@
+LOAD-CSV-1,shipper@example.com,receiver@example.com,carrier@example.com,250000
+LOAD-CSV-2,shipper@example.com,,carrier@example.com,150000

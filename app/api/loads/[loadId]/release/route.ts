@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
+import getUserFromReq from '../../../../../lib/getUserFromReq';
+import { getRoleNameForUser } from '../../../../../lib/permissions';
 
-export async function POST(req: Request, { params }: { params: { loadId: string } }) {
+export async function POST(req: Request, context: any) {
   try {
-    const { loadId } = params;
+    const { loadId } = (context && (context.params ?? {})) as any;
     if (!loadId) return NextResponse.json({ error: 'missing_load' }, { status: 400 });
 
     const body = await req.json().catch(() => ({} as any));
@@ -17,12 +19,19 @@ export async function POST(req: Request, { params }: { params: { loadId: string 
     if (!pod) return NextResponse.json({ error: 'pod_required' }, { status: 400 });
     if (pod.loadId !== loadId) return NextResponse.json({ error: 'pod_not_for_load' }, { status: 400 });
 
-    const user = (await import('../../../../../lib/getUserFromReq')).default;
-    const actor = await user(req);
-    const actorId = actor?.id ?? null;
+    const actor = await getUserFromReq(req);
+    if (!actor) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+    const actorId = actor.id;
+
+    // Only shipper, broker, or admin may release funds
+    const roleName = await getRoleNameForUser(actor);
+    if (!(actor.id === load.shipperId || actor.id === load.brokerId || roleName === 'ADMIN')) {
+      return NextResponse.json({ error: 'forbidden', message: 'not authorized to release funds' }, { status: 403 });
+    }
 
     // Shipments funds held on shipper wallet.pendingCents; ensure pending >= gross
-    const shipperWallet = await prisma.wallet.findFirst({ where: { ownerId: load.shipperId } });
+  if (!load.shipperId) return NextResponse.json({ error: 'no_shipper_assigned' }, { status: 400 });
+  const shipperWallet = await prisma.wallet.findFirst({ where: { ownerId: load.shipperId } });
     if (!shipperWallet) return NextResponse.json({ error: 'shipper_wallet_not_found' }, { status: 404 });
     if ((shipperWallet.pendingCents ?? 0) < load.grossAmount) return NextResponse.json({ error: 'insufficient_pending', message: 'Not enough held funds' }, { status: 400 });
 

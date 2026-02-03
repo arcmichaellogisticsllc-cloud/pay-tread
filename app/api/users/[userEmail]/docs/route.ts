@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
 
-export async function POST(req: Request, { params }: { params: { userEmail: string } }) {
+export async function POST(req: Request, context: any) {
   try {
-    const { userEmail } = params;
+    const { userEmail } = (context && (context.params ?? {})) as any;
     const body = await req.json().catch(() => ({} as any));
     const { docType } = body;
     if (!userEmail) return NextResponse.json({ error: 'missing_user' }, { status: 400 });

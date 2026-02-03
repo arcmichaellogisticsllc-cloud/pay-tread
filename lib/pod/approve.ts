@@ -10,6 +10,8 @@ export async function approvePodCanonical(podId: string, actorId?: string): Prom
   const load = await prisma.load.findUnique({ where: { id: pod.loadId } });
   if (!load) throw new Error('load_not_found');
 
+  if (!load.carrierId) throw new Error('no_carrier_assigned');
+
   // If pod already approved and a LOAD_GROSS txn exists, return it
   if (pod.status === 'APPROVED' || pod.approvedAt) {
     const existing = await prisma.walletTransaction.findFirst({ where: { loadId: load.id, type: 'LOAD_GROSS' }, orderBy: { createdAt: 'desc' } });
@@ -19,7 +21,7 @@ export async function approvePodCanonical(podId: string, actorId?: string): Prom
   // Find or create carrier wallet
   let carrierWallet = await prisma.wallet.findFirst({ where: { ownerId: load.carrierId } });
   if (!carrierWallet) {
-    carrierWallet = await prisma.wallet.create({ data: { ownerId: load.carrierId ?? '', balanceCents: 0, pendingCents: 0, clearedCents: 0 } });
+    carrierWallet = await prisma.wallet.create({ data: { ownerId: load.carrierId, balanceCents: 0, pendingCents: 0, clearedCents: 0 } });
   }
 
   const lastTxn = await prisma.walletTransaction.findFirst({ where: { walletId: carrierWallet.id }, orderBy: { createdAt: 'desc' } });

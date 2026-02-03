@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { sendNotification, sendPayoutReceipt } from '../../../../lib/notifications';
 
 export async function POST(req: Request) {
   try {
@@ -10,9 +11,30 @@ export async function POST(req: Request) {
     const payout = await prisma.payout.findUnique({ where: { id: payoutId } });
     if (!payout) return NextResponse.json({ error: 'payout_not_found' }, { status: 404 });
 
+    // If an admin has frozen this payout, ignore the webhook and leave the payout alone.
+    if (payout.status === 'FROZEN') {
+      await prisma.auditLog.create({ data: { actorId: null, actionType: 'PAYOUT_WEBHOOK_IGNORED_FROZEN', targetType: 'PAYOUT', targetId: payoutId, payload: JSON.stringify({ incomingStatus: status, payoutStatus: payout.status }) } });
+      return NextResponse.json({ ok: true, message: 'payout_frozen_ignored' });
+    }
+
     if (status === 'SENT') {
       await prisma.payout.update({ where: { id: payoutId }, data: { status: 'SENT', processedAt: new Date(), externalPaymentId } });
       await prisma.auditLog.create({ data: { actorId: payout.requestedBy ?? null, actionType: 'PAYOUT_SENT', targetType: 'PAYOUT', targetId: payoutId, payload: JSON.stringify({ externalPaymentId }) } });
+
+      // Send notifications and payout receipt
+      try {
+        // notify requester
+        if (payout.requestedBy) await sendNotification(payout.requestedBy, 'PAYOUT_SENT', `Payout ${payout.id} of ${payout.amountCents} sent`, `/payouts/${payout.id}`);
+        // notify carrier (if different)
+        if (payout.loadId) {
+          const load = await prisma.load.findUnique({ where: { id: payout.loadId } });
+          if (load?.carrierId && load.carrierId !== payout.requestedBy) await sendNotification(load.carrierId, 'PAYOUT_SENT', `Payout for load ${load.reference ?? load.externalRef} sent`, `/payouts/${payout.id}`);
+        }
+        await sendPayoutReceipt(payoutId);
+      } catch (e) {
+        console.error('Notification/receipt error', e);
+      }
+
       return NextResponse.json({ ok: true });
     }
 

@@ -8,19 +8,12 @@ export default function ShipperPage() {
   const [me, setMe] = useState<any>(null);
   const [wallet, setWallet] = useState<any>(null);
   const [loads, setLoads] = useState<any[]>([]);
-  const [reference, setReference] = useState('LOAD-' + Math.floor(Math.random()*9000+1000));
+  const [reference, setReference] = useState(() => 'LOAD-' + Math.floor(Math.random()*9000+1000));
   const [gross, setGross] = useState('200000');
   const [carrierEmail, setCarrierEmail] = useState('carrier@example.com');
   const [selectedLoad, setSelectedLoad] = useState<any | null>(null);
   const [selectedPods, setSelectedPods] = useState<Record<string, string>>({});
   const toasts = useToasts();
-
-  useEffect(() => {
-    fetch('/api/users/me', { headers: { 'x-user-email': 'carrier@example.com' } })
-      .then(r => r.json()).then(j => setMe(j.data)).catch(() => {});
-    refresh();
-    fetchWallet();
-  }, []);
 
   const refresh = () => {
     fetch('/api/loads').then(r => r.json()).then(j => setLoads(j.data || [])).catch(() => setLoads([]));
@@ -29,6 +22,13 @@ export default function ShipperPage() {
   const fetchWallet = () => {
     fetch('/api/wallets/me', { headers: { 'x-user-email': 'broker@example.com' } }).then(r => r.json()).then(j => setWallet(j.data)).catch(() => setWallet(null));
   };
+
+  useEffect(() => {
+    fetch('/api/users/me', { headers: { 'x-user-email': 'shipper@example.com' } })
+      .then(r => r.json()).then(j => setMe(j.data)).catch(() => {});
+    refresh();
+    fetchWallet();
+  }, []);
 
   const createLoad = async () => {
     const body = { reference, shipperEmail: me?.email ?? 'broker@example.com', grossAmount: Number(gross), currency: 'USD', rateCents: Number(gross), paymentMethod: 'ACH' };
@@ -109,14 +109,14 @@ export default function ShipperPage() {
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <input value={carrierEmail} onChange={e => setCarrierEmail(e.target.value)} style={{ padding: '4px' }} />
-                <button onClick={() => assignCarrier(l.id)}>Invite/Assign Carrier</button>
-                <button onClick={() => holdFunds(l.id)}>Hold Funds</button>
+                <button onClick={() => assignCarrier(l.id)} disabled={!(me?.role === 'BROKER' || me?.role === 'ADMIN' || me?.id === l.shipperId)} title={!(me?.role === 'BROKER' || me?.role === 'ADMIN' || me?.id === l.shipperId) ? 'Only broker, shipper or admin can assign carriers' : ''}>Invite/Assign Carrier</button>
+                <button onClick={() => holdFunds(l.id)} disabled={!(me?.id === l.shipperId || me?.role === 'BROKER' || me?.role === 'ADMIN')} title={!(me?.id === l.shipperId || me?.role === 'BROKER' || me?.role === 'ADMIN') ? 'Only shipper, broker or admin can hold funds' : ''}>Hold Funds</button>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <select value={selectedPods[l.id] ?? ''} onChange={e => setSelectedPods(s => ({ ...s, [l.id]: e.target.value }))}>
                     <option value="">Select POD</option>
                     {(l.pods || []).map((p:any) => <option key={p.id} value={p.id}>{p.id} — {p.status}</option>)}
                   </select>
-                  <button onClick={() => releaseFunds(l.id)}>Confirm Delivery / Release</button>
+                  <button onClick={() => releaseFunds(l.id)} disabled={!(me?.id === l.shipperId || me?.role === 'BROKER' || me?.role === 'ADMIN')} title={!(me?.id === l.shipperId || me?.role === 'BROKER' || me?.role === 'ADMIN') ? 'Only shipper, broker or admin can release funds' : ''}>Confirm Delivery / Release</button>
                 </div>
                 <button onClick={() => inspectLedger(l.walletId)}>View Ledger</button>
               </div>

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '../../../../../lib/prisma';
 import getUserFromReq from '../../../../../lib/getUserFromReq';
+import { getRoleNameForUser } from '../../../../../lib/permissions';
 
-export async function POST(req: Request, { params }: { params: { loadId: string } }) {
+export async function POST(req: Request, context: any) {
   try {
-    const { loadId } = params;
+    const { loadId } = (context && (context.params ?? {})) as any;
     if (!loadId) return NextResponse.json({ error: 'missing_load' }, { status: 400 });
 
     const body = await req.json().catch(() => ({} as any));
@@ -13,18 +14,26 @@ export async function POST(req: Request, { params }: { params: { loadId: string 
     const load = await prisma.load.findUnique({ where: { id: loadId } });
     if (!load) return NextResponse.json({ error: 'load_not_found' }, { status: 404 });
 
-    const amount = amountCents ?? load.grossAmount;
+  const amount = amountCents ?? load.grossAmount;
     if (!amount || amount <= 0) return NextResponse.json({ error: 'invalid_amount' }, { status: 400 });
 
     // find shipper wallet
-    let wallet = await prisma.wallet.findFirst({ where: { ownerId: load.shipperId } });
+  if (!load.shipperId) return NextResponse.json({ error: 'no_shipper_assigned' }, { status: 400 });
+  const wallet = await prisma.wallet.findFirst({ where: { ownerId: load.shipperId } });
     if (!wallet) {
       return NextResponse.json({ error: 'shipper_wallet_not_found' }, { status: 404 });
     }
 
     // resolve actor (dev helper: x-user-email or ?email)
     const user = await getUserFromReq(req);
-    const actorId = user?.id ?? null;
+    if (!user) return NextResponse.json({ error: 'unauthenticated' }, { status: 401 });
+    const actorId = user.id;
+
+    // only shipper, broker, or admin may create a hold on shipper funds
+    const roleName = await getRoleNameForUser(user);
+    if (!(user.id === load.shipperId || user.id === load.brokerId || roleName === 'ADMIN')) {
+      return NextResponse.json({ error: 'forbidden', message: 'only shipper, broker, or admin may create holds' }, { status: 403 });
+    }
 
     // atomic conditional decrement: ensure wallet.balanceCents >= amount
     const updateResult = await prisma.wallet.updateMany({ where: { id: wallet.id, balanceCents: { gte: amount } }, data: { balanceCents: { decrement: amount }, pendingCents: { increment: amount } } });

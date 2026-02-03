@@ -9,12 +9,13 @@ type Wallet = any;
 export default function AdminPage() {
   const [loads, setLoads] = useState<Load[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [carrierFilter, setCarrierFilter] = useState<string | null>(null);
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/loads').then(r => r.json()).then(j => setLoads(j.data || [])).catch(() => setLoads([]));
-    fetch('/api/admin/users').then(r => r.json()).then(j => setUsers(j.data || [])).catch(() => setUsers([]));
+  fetch('/api/admin/users').then(r => r.json()).then(j => setUsers(j.data || [])).catch(() => setUsers([]));
     fetch('/api/admin/wallets').then(r => r.json()).then(j => setWallets(j.data || [])).catch(() => setWallets([]));
   }, []);
 
@@ -61,13 +62,37 @@ export default function AdminPage() {
           <h2>Compliance Queue</h2>
           <p style={{ color: '#6b7280' }}>Review KYC, insurance, COI flags</p>
           <div>
-            {users.length === 0 ? <div>No users</div> : users.map((u:any) => (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <label style={{ fontSize: 13, color: '#6b7280' }}>Filter carriers:</label>
+              <select value={carrierFilter ?? ''} onChange={(e)=>setCarrierFilter(e.target.value || null)} style={{ padding: 6 }}>
+                <option value="">All</option>
+                <option value="FLEET">Fleet</option>
+                <option value="OWNER_OPERATOR">Owner-Operator</option>
+              </select>
+            </div>
+            {users.length === 0 ? <div>No users</div> : users.filter((u:any) => {
+              if (!carrierFilter) return true;
+              return (u.carrierType ?? null) === carrierFilter;
+            }).map((u:any) => (
               <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #f3f4f6' }}>
                 <div>
-                  <div style={{ fontWeight: 700 }}>{u.email}</div>
-                  <div style={{ color: '#6b7280' }}>KYC: {u.kycStatus}</div>
+                  <div style={{ fontWeight: 700 }}>{u.email} {u.role ? <span style={{ fontSize: 12, color: '#6b7280', marginLeft: 8 }}>({u.role})</span> : null}</div>
+                  <div style={{ color: '#6b7280' }}>KYC: {u.kycStatus} {u.carrierType ? <strong style={{ marginLeft: 8 }}>{u.carrierType}</strong> : null}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
+                  {u.role === 'CARRIER' && (
+                    <select defaultValue={u.carrierType ?? ''} onChange={async (e) => {
+                      const val = e.target.value || null;
+                      const res = await fetch(`/api/admin/users/${u.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ carrierType: val }) });
+                      const j = await res.json().catch(()=>({}));
+                      setMessage(JSON.stringify(j));
+                      fetch('/api/admin/users').then(r => r.json()).then(j => setUsers(j.data || [])).catch(()=>{});
+                    }}>
+                      <option value="">Unset</option>
+                      <option value="FLEET">Fleet</option>
+                      <option value="OWNER_OPERATOR">Owner-Operator</option>
+                    </select>
+                  )}
                   {u.kycStatus !== 'VERIFIED' && <button onClick={() => verifyKyc(u.id)} className="px-3 py-1 bg-amber-300 rounded">Verify KYC</button>}
                 </div>
               </div>

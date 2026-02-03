@@ -14,6 +14,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.13.0",
+  "@inertiajs/inertia": "^0.11.0",
+  "@inertiajs/react": "^1.0.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.67.2",
     "ioredis": "^5.9.2",
@@ -25,6 +27,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "jest": "^29.6.1",
+    "@types/jest": "^29.5.2",
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",

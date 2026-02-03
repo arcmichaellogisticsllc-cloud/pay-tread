@@ -47,8 +47,10 @@ async function main(){
 
   const promises = [];
   for(let i=0;i<concurrent;i++){
-    const body = { amountCents: amount, method: 'instant_rtp', requestedBy: 'broker@example.com' };
-    promises.push(fetch(`${base}/api/loads/${loadId}/payouts`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(r=>r.json()).then(j=>({ status: 'ok', resp: j })).catch(e=>({ status: 'err', error: String(e) })));
+  // include loadId in the body as a fallback in case the server doesn't populate URL params
+  const idempotency = `concurrency-${i}-${Date.now()}`;
+  const body = { loadId, amountCents: amount, method: 'instant_rtp', requestedBy: 'broker@example.com', idempotencyKey: idempotency };
+  promises.push(fetch(`${base}/api/loads/${loadId}/payouts`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-user-email': 'broker@example.com', 'Idempotency-Key': idempotency }, body: JSON.stringify(body) }).then(r=>r.json()).then(j=>({ status: 'ok', resp: j })).catch(e=>({ status: 'err', error: String(e) })));
   }
 
   const results = await Promise.all(promises);

@@ -10,6 +10,9 @@ datasource db {
 // Note: enums removed for SQLite compatibility. Use string fields with
 // well-known values instead (e.g. "CREATED", "ASSIGNED", "ENROUTE", ...).
 
+// Note: carrierType is stored as a string in SQLite dev. For production you
+// can convert this to a proper Prisma enum + migration (e.g. on Postgres).
+
 model Role {
   id    Int    @id @default(autoincrement())
   name  String @unique
@@ -25,6 +28,8 @@ model User {
   profile   String?
   // KYC status: 'UNVERIFIED' | 'PENDING' | 'VERIFIED'
   kycStatus String   @default("UNVERIFIED")
+  // Carrier type when role is CARRIER: 'FLEET' | 'OWNER_OPERATOR'
+  carrierType String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   wallets   Wallet[]
@@ -37,6 +42,8 @@ model User {
   notifications Notification[]
   assets CarrierAsset[]
   payoutRequests PayoutRequest[]
+  payoutMethods PayoutMethod[]
+  userFlags UserFlag[]
 }
 
 model Load {
@@ -64,6 +71,7 @@ model Load {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   pods          Pod[]
+  rateConfirmations RateConfirmation[]
   payouts       Payout[]
   advances      Advance[]
   notes         String?
@@ -122,6 +130,18 @@ model Notification {
   forUser User @relation(fields: [forUserId], references: [id])
 }
 
+model RateConfirmation {
+  id        String   @id @default(uuid())
+  loadId    String
+  uploadedBy String
+  s3Key     String?
+  mime      String?
+  checksum  String?
+  createdAt DateTime @default(now())
+
+  load Load @relation(fields: [loadId], references: [id])
+}
+
 model Wallet {
   id            String               @id @default(uuid())
   ownerId       String
@@ -161,6 +181,7 @@ model Payout {
   walletTransactionId String? @unique
   idempotencyKey     String?  @unique
   amountCents        Int
+  feeCents           Int?
   method             String
   status             String   @default("REQUESTED")
   requestedBy        String?
@@ -174,6 +195,18 @@ model Payout {
 
   // relation to the wallet transaction that represents this payout
   walletTransaction WalletTransaction? @relation(fields: [walletTransactionId], references: [id])
+}
+
+model PayoutMethod {
+  id        String   @id @default(uuid())
+  ownerId   String
+  type      String   // e.g. 'BANK_TRANSFER' | 'DEBIT_CARD'
+  details   String?  // JSON string for dev (bank routing, tokenized id, etc.)
+  last4     String?
+  verifiedAt DateTime?
+  createdAt DateTime @default(now())
+
+  owner User @relation(fields: [ownerId], references: [id])
 }
 
 model PayoutRequest {
@@ -233,5 +266,18 @@ model AuditLog {
   // payload stored as JSON string for SQLite dev
   payload   String?
   createdAt DateTime @default(now())
+}
+
+// Persistent user flags for AML/policy/risks
+model UserFlag {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // e.g. 'LARGE_TRANSACTION' | 'HIGH_VOLUME' | 'KYC_HOLD'
+  reason    String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  @@index([userId])
 }
 
